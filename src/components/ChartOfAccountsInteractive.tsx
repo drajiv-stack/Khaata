@@ -86,70 +86,114 @@ export default function ChartOfAccountsInteractive({ initialAccounts }: { initia
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 max-w-6xl mx-auto">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Chart of Accounts</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">View and manage your ledger accounts and their current balances.</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Chart of Accounts</h1>
+          <p className="mt-2 text-base text-gray-500 dark:text-gray-400 font-medium">View and manage your ledger accounts.</p>
         </div>
         <button 
           onClick={() => handleOpenModal()} 
-          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 shadow-sm transition-colors"
+          className="w-full md:w-auto text-center px-5 py-4 md:py-2.5 bg-[#007AFF] dark:bg-[#0A84FF] text-white text-base font-bold rounded-2xl hover:opacity-90 shadow-sm transition-opacity"
         >
           + Add Account
         </button>
       </div>
 
-      <div className="flex justify-end">
-        <label className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
+      <div className="flex justify-end mb-2">
+        <label className="flex items-center space-x-2 text-sm font-medium text-gray-600 dark:text-gray-300 cursor-pointer">
           <input 
             type="checkbox" 
             checked={showInactive} 
             onChange={(e) => setShowInactive(e.target.checked)} 
-            className="rounded text-blue-600 focus:ring-blue-500"
+            className="rounded text-[#007AFF] focus:ring-[#007AFF] w-4 h-4"
           />
           <span>Show Inactive Accounts</span>
         </label>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900/50">
+      <div className="bg-transparent md:bg-[var(--card-bg)] md:rounded-3xl md:shadow-sm md:border md:border-black/5 md:dark:border-white/5 overflow-hidden">
+        
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-4">
+          {filteredAccounts.map((acc) => (
+            <div key={acc.id} className={`bg-[var(--card-bg)] p-5 rounded-3xl shadow-sm border border-black/5 dark:border-white/5 transition-colors ${!acc.isActive ? 'opacity-75 bg-gray-50 dark:bg-black/20' : ''}`}>
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
+                    {acc.code} <span className="text-base font-medium text-gray-500 ml-1">{acc.name}</span>
+                  </h3>
+                  {!acc.isActive && <span className="inline-block mt-1 text-[10px] text-red-500 font-bold bg-red-500/10 px-2 py-1 rounded-md">INACTIVE</span>}
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Balance</p>
+                  <p className={`text-base font-bold ${acc.balance < 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
+                    ₹{acc.balance.toFixed(2)}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mb-5 mt-3">
+                <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold bg-[#007AFF]/10 text-[#007AFF] dark:bg-[#0A84FF]/20 dark:text-[#0A84FF] uppercase tracking-wider">
+                  {acc.type.replace('_', ' ')}
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center border-t border-black/5 dark:border-white/5 pt-4">
+                <Link href={`/accounts/${acc.id}`} className="text-[#007AFF] dark:text-[#0A84FF] text-sm font-bold bg-[#007AFF]/10 dark:bg-[#0A84FF]/20 px-4 py-2 rounded-xl active:opacity-70 transition-opacity">
+                  View Ledger
+                </Link>
+                <div className="flex space-x-2">
+                  <button onClick={() => handleOpenModal(acc)} className="text-gray-700 dark:text-gray-300 bg-black/5 dark:bg-white/5 px-4 py-2 rounded-xl text-sm font-bold active:opacity-70 transition-opacity">
+                    Edit
+                  </button>
+                  <button onClick={() => handleToggleStatus(acc.id, acc.isActive)} className={`px-4 py-2 rounded-xl text-sm font-bold active:opacity-70 transition-opacity ${acc.isActive ? "text-red-500 bg-red-500/10" : "text-emerald-500 bg-emerald-500/10"}`}>
+                    {acc.isActive ? "Del" : "Restore"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="min-w-full divide-y divide-black/5 dark:divide-white/5">
+            <thead className="bg-black/5 dark:bg-white/5">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Balance (₹)</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Code</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Name</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Type</th>
+                <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-widest">Balance (₹)</th>
+                <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-widest">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-[var(--card-bg)] divide-y divide-black/5 dark:divide-white/5">
               {filteredAccounts.map((acc) => (
-                <tr key={acc.id} className={`transition-colors ${!acc.isActive ? 'bg-gray-50 dark:bg-gray-900/30 opacity-75' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                <tr key={acc.id} className={`transition-colors ${!acc.isActive ? 'bg-black/5 dark:bg-white/5 opacity-75' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white">
                     {acc.code}
-                    {!acc.isActive && <span className="ml-2 text-xs text-red-500 font-normal">(Inactive)</span>}
+                    {!acc.isActive && <span className="ml-2 text-[10px] text-red-500 font-bold bg-red-500/10 px-2 py-1 rounded-md">INACTIVE</span>}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-medium">
                     {acc.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold bg-[#007AFF]/10 text-[#007AFF] dark:bg-[#0A84FF]/20 dark:text-[#0A84FF]">
                       {acc.type.replace('_', ' ')}
                     </span>
                   </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-medium ${acc.balance < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-bold ${acc.balance < 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
                     {acc.balance.toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                    <Link href={`/accounts/${acc.id}`} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold space-x-4">
+                    <Link href={`/accounts/${acc.id}`} className="text-[#007AFF] hover:text-[#007AFF]/80 dark:text-[#0A84FF] dark:hover:text-[#0A84FF]/80">
                       View
                     </Link>
                     <button onClick={() => handleOpenModal(acc)} className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
                       Edit
                     </button>
-                    <button onClick={() => handleToggleStatus(acc.id, acc.isActive)} className={acc.isActive ? "text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" : "text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"}>
+                    <button onClick={() => handleToggleStatus(acc.id, acc.isActive)} className={acc.isActive ? "text-red-500 hover:text-red-600" : "text-emerald-500 hover:text-emerald-600"}>
                       {acc.isActive ? "Deactivate" : "Restore"}
                     </button>
                   </td>
@@ -161,26 +205,26 @@ export default function ChartOfAccountsInteractive({ initialAccounts }: { initia
       </div>
 
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{editId ? 'Edit Account' : 'New Account'}</h3>
-              <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-500">✕</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md">
+          <div className="bg-[var(--card-bg)] rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-black/5 dark:border-white/10">
+            <div className="px-6 py-5 border-b border-black/5 dark:border-white/10 flex justify-between items-center">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{editId ? 'Edit Account' : 'New Account'}</h3>
+              <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">✕</button>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Code</label>
-                <input required value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="e.g. CASH-01" />
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Code</label>
+                <input required value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} className="w-full px-4 py-3 md:py-2.5 border border-black/10 dark:border-white/10 rounded-xl bg-transparent dark:text-white focus:border-[#007AFF] focus:ring-1 focus:ring-[#007AFF] transition-colors" placeholder="e.g. CASH-01" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
-                <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="e.g. Main Cash Drawer" />
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Name</label>
+                <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-3 md:py-2.5 border border-black/10 dark:border-white/10 rounded-xl bg-transparent dark:text-white focus:border-[#007AFF] focus:ring-1 focus:ring-[#007AFF] transition-colors" placeholder="e.g. Main Cash Drawer" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
-                  <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Type</label>
+                  <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full px-4 py-3 md:py-2.5 border border-black/10 dark:border-white/10 rounded-xl bg-transparent dark:text-white focus:border-[#007AFF] focus:ring-1 focus:ring-[#007AFF] transition-colors">
                     <option value="CASH">Cash</option>
                     <option value="BANK">Bank</option>
                     <option value="DIGITAL_SETTLEMENT">Digital/Card</option>
@@ -192,18 +236,18 @@ export default function ChartOfAccountsInteractive({ initialAccounts }: { initia
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Normal Side</label>
-                  <select value={formData.normalSide} onChange={e => setFormData({...formData, normalSide: e.target.value})} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Normal Side</label>
+                  <select value={formData.normalSide} onChange={e => setFormData({...formData, normalSide: e.target.value})} className="w-full px-4 py-3 md:py-2.5 border border-black/10 dark:border-white/10 rounded-xl bg-transparent dark:text-white focus:border-[#007AFF] focus:ring-1 focus:ring-[#007AFF] transition-colors">
                     <option value="DEBIT">Debit</option>
                     <option value="CREDIT">Credit</option>
                   </select>
                 </div>
               </div>
-              <div className="pt-4 flex justify-end space-x-3">
-                <button type="button" onClick={() => setModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors">
+              <div className="pt-5 flex flex-col md:flex-row justify-end space-y-3 md:space-y-0 md:space-x-3 mt-2">
+                <button type="button" onClick={() => setModalOpen(false)} className="w-full md:w-auto px-6 py-4 md:py-2.5 text-base font-bold text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl transition-colors border border-black/10 dark:border-white/10 md:border-transparent active:opacity-70">
                   Cancel
                 </button>
-                <button type="submit" disabled={loading} className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50">
+                <button type="submit" disabled={loading} className="w-full md:w-auto px-6 py-4 md:py-2.5 bg-[#007AFF] dark:bg-[#0A84FF] text-white text-base font-bold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 active:opacity-70">
                   {loading ? 'Saving...' : 'Save Account'}
                 </button>
               </div>

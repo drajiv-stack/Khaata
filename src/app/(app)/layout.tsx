@@ -13,35 +13,50 @@ export default async function AppLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-        <div className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-700">
-          <h1 className="text-xl font-bold text-blue-600 dark:text-blue-400">PumpLedger</h1>
+    <div className="min-h-screen bg-[var(--background)] flex flex-col md:flex-row">
+      {/* Mobile Top Bar */}
+      <header className="md:hidden h-14 bg-[var(--card-bg)] border-b border-black/5 dark:border-white/5 flex items-center justify-between px-4 sticky top-0 z-20 shadow-sm backdrop-blur-md bg-opacity-90 dark:bg-opacity-90">
+        <h1 className="text-xl font-bold text-[#007AFF] dark:text-[#0A84FF] tracking-tight">PumpLedger</h1>
+        <div className="flex items-center space-x-3">
+          <div className="text-right flex flex-col justify-center">
+            <span className="text-sm font-semibold text-gray-900 dark:text-white leading-tight">{session.user.name}</span>
+          </div>
+          <form action={async () => { "use server"; await signOut(); }}>
+            <button className="text-sm text-red-500 font-semibold px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 active:opacity-70 transition-opacity">
+              Logout
+            </button>
+          </form>
+        </div>
+      </header>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex w-64 bg-[var(--card-bg)] border-r border-black/5 dark:border-white/5 flex-col">
+        <div className="h-16 flex items-center px-6 border-b border-black/5 dark:border-white/5">
+          <h1 className="text-xl font-bold text-[#007AFF] dark:text-[#0A84FF] tracking-tight">PumpLedger</h1>
         </div>
         
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          <Link href="/dashboard" className="block px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto text-base">
+          <Link href="/dashboard" className="block px-3 py-2 rounded-xl text-gray-700 hover:bg-black/5 dark:text-gray-300 dark:hover:bg-white/5 font-medium transition-colors">
             Dashboard
           </Link>
-          <Link href="/entry" className="block px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 font-medium">
+          <Link href="/entry" className="block px-3 py-2 rounded-xl text-[#007AFF] dark:text-[#0A84FF] hover:bg-[#007AFF]/10 dark:hover:bg-[#0A84FF]/10 font-semibold transition-colors">
             + New Entry
           </Link>
-          <Link href="/ledger" className="block px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+          <Link href="/ledger" className="block px-3 py-2 rounded-xl text-gray-700 hover:bg-black/5 dark:text-gray-300 dark:hover:bg-white/5 font-medium transition-colors">
             General Ledger
           </Link>
-          <Link href="/accounts" className="block px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+          <Link href="/accounts" className="block px-3 py-2 rounded-xl text-gray-700 hover:bg-black/5 dark:text-gray-300 dark:hover:bg-white/5 font-medium transition-colors">
             Chart of Accounts
           </Link>
-          <Link href="/audit" className="block px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+          <Link href="/audit" className="block px-3 py-2 rounded-xl text-gray-700 hover:bg-black/5 dark:text-gray-300 dark:hover:bg-white/5 font-medium transition-colors">
             Audit Log
           </Link>
         </nav>
 
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-6 border-t border-black/5 dark:border-white/5">
           <div className="mb-4 px-2">
-            <p className="text-sm font-medium text-gray-900 dark:text-white">{session.user.name}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{session.user.role}</p>
+            <p className="text-base font-semibold text-gray-900 dark:text-white">{session.user.name}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{session.user.role}</p>
           </div>
           <form
             action={async () => {
@@ -49,7 +64,7 @@ export default async function AppLayout({
               await signOut()
             }}
           >
-            <button className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors">
+            <button className="w-full px-4 py-2 text-left text-base text-red-500 hover:bg-red-500/10 rounded-xl font-semibold transition-colors">
               Log out
             </button>
           </form>
@@ -57,14 +72,33 @@ export default async function AppLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center px-8 shadow-sm z-10">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Workspace</h2>
+      <main className="flex-1 flex flex-col h-[calc(100vh-3.5rem)] md:h-screen overflow-hidden relative pb-[84px] md:pb-0">
+        <header className="hidden md:flex h-16 bg-[var(--card-bg)] border-b border-black/5 dark:border-white/5 items-center px-8 z-10">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white">Workspace</h2>
         </header>
-        <div className="flex-1 overflow-auto p-8">
+        <div className="flex-1 overflow-auto p-4 md:p-8 bg-[var(--background)]">
           {children}
         </div>
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[84px] pb-6 bg-[var(--card-bg)] border-t border-black/5 dark:border-white/5 flex justify-around items-center z-30 px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] backdrop-blur-xl bg-opacity-90 dark:bg-opacity-90">
+        <Link href="/dashboard" className="flex flex-col items-center justify-center w-full h-full text-gray-500 hover:text-[#007AFF] dark:hover:text-[#0A84FF]">
+          <span className="text-[11px] font-semibold mt-1 tracking-wide">Dash</span>
+        </Link>
+        <Link href="/entry" className="flex flex-col items-center justify-center w-full h-full text-[#007AFF] dark:text-[#0A84FF]">
+          <div className="bg-[#007AFF]/10 dark:bg-[#0A84FF]/20 p-2.5 rounded-full mb-1">
+            <span className="text-base font-bold leading-none">+</span>
+          </div>
+          <span className="text-[11px] font-bold tracking-wide">Entry</span>
+        </Link>
+        <Link href="/ledger" className="flex flex-col items-center justify-center w-full h-full text-gray-500 hover:text-[#007AFF] dark:hover:text-[#0A84FF]">
+          <span className="text-[11px] font-semibold mt-1 tracking-wide">Ledger</span>
+        </Link>
+        <Link href="/accounts" className="flex flex-col items-center justify-center w-full h-full text-gray-500 hover:text-[#007AFF] dark:hover:text-[#0A84FF]">
+          <span className="text-[11px] font-semibold mt-1 tracking-wide">COA</span>
+        </Link>
+      </nav>
     </div>
   )
 }

@@ -67,120 +67,174 @@ export default function AccountLedgerInteractive({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+    <div className="space-y-6 max-w-6xl mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {account.code} - {account.name}
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+            {account.code ? `${account.code} - ` : ''}{account.name}
           </h1>
-          <div className="mt-2 flex items-center space-x-3 text-sm text-gray-500 dark:text-gray-400">
-            <span className="px-2.5 py-0.5 rounded-full font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-              {account.type.replace('_', ' ')}
-            </span>
-            <span>Normal Side: <strong>{account.normalSide}</strong></span>
-          </div>
+          <p className="mt-2 text-base text-gray-500 dark:text-gray-400 font-medium">
+            {account.type.replace('_', ' ')} • Normal Side: {account.normalSide}
+          </p>
         </div>
         
-        <div className="flex flex-col items-end space-y-3">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 px-6 py-4 flex flex-col items-end">
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Current Balance</span>
-            <span className={`text-2xl font-bold ${currentBalance < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="text-right flex-1 md:flex-none">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Current Balance</p>
+            <p className={`text-2xl font-bold tracking-tight ${currentBalance < 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
               ₹{currentBalance.toFixed(2)}
-            </span>
+            </p>
           </div>
-          <Link href="/entry" className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 shadow-sm transition-colors">
+          <Link href="/entry" className="px-5 py-4 md:py-2.5 bg-[#007AFF] dark:bg-[#0A84FF] text-white text-base font-bold rounded-2xl hover:opacity-90 shadow-sm transition-opacity text-center active:opacity-70">
             + New Entry
           </Link>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-4 items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="flex space-x-2">
-          <button onClick={() => setFilter('ALL')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${filter === 'ALL' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'}`}>All Time</button>
-          <button onClick={() => setFilter('YTD')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${filter === 'YTD' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'}`}>YTD</button>
-          <button onClick={() => setFilter('MONTH')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${filter === 'MONTH' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'}`}>This Month</button>
+      <div className="flex flex-wrap gap-4 items-center justify-between bg-[var(--card-bg)] p-4 rounded-3xl shadow-sm border border-black/5 dark:border-white/5">
+        <div className="flex w-full md:w-auto space-x-2 bg-black/5 dark:bg-white/5 p-1 rounded-2xl">
+          <button onClick={() => setFilter('ALL')} className={`flex-1 md:flex-none px-4 py-3 md:py-1.5 rounded-xl text-sm font-bold transition-all ${filter === 'ALL' ? 'bg-white dark:bg-[#2C2C2E] shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>All Time</button>
+          <button onClick={() => setFilter('YTD')} className={`flex-1 md:flex-none px-4 py-3 md:py-1.5 rounded-xl text-sm font-bold transition-all ${filter === 'YTD' ? 'bg-white dark:bg-[#2C2C2E] shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>YTD</button>
+          <button onClick={() => setFilter('MONTH')} className={`flex-1 md:flex-none px-4 py-3 md:py-1.5 rounded-xl text-sm font-bold transition-all ${filter === 'MONTH' ? 'bg-white dark:bg-[#2C2C2E] shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>Month</button>
         </div>
         
-        <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-          <button onClick={() => setViewMode('TABLE')} className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'TABLE' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>Table</button>
-          <button onClick={() => setViewMode('CHART')} className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'CHART' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>Chart</button>
+        <div className="flex w-full md:w-auto space-x-2 bg-black/5 dark:bg-white/5 p-1 rounded-2xl">
+          <button onClick={() => setViewMode('TABLE')} className={`flex-1 md:flex-none px-4 py-3 md:py-1.5 rounded-xl text-sm font-bold transition-all ${viewMode === 'TABLE' ? 'bg-white dark:bg-[#2C2C2E] shadow-sm text-[#007AFF] dark:text-[#0A84FF]' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>Table</button>
+          <button onClick={() => setViewMode('CHART')} className={`flex-1 md:flex-none px-4 py-3 md:py-1.5 rounded-xl text-sm font-bold transition-all ${viewMode === 'CHART' ? 'bg-white dark:bg-[#2C2C2E] shadow-sm text-[#007AFF] dark:text-[#0A84FF]' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>Chart</button>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden min-h-[400px]">
+      <div className="bg-transparent md:bg-[var(--card-bg)] md:rounded-3xl md:shadow-sm md:border md:border-black/5 md:dark:border-white/5 overflow-hidden">
         {viewMode === 'CHART' ? (
           <div className="p-6 h-[400px]">
             {chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis dataKey="name" fontSize={12} tickMargin={10} />
-                  <YAxis fontSize={12} domain={['auto', 'auto']} tickFormatter={(val) => `₹${val}`} />
-                  <Tooltip formatter={(value: number) => [`₹${value.toFixed(2)}`, 'Balance']} />
-                  <Line type="stepAfter" dataKey="balance" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.1} vertical={false} />
+                  <XAxis dataKey="name" fontSize={12} tickMargin={10} axisLine={false} tickLine={false} stroke="#8E8E93" />
+                  <YAxis fontSize={12} domain={['auto', 'auto']} tickFormatter={(val) => `₹${val}`} axisLine={false} tickLine={false} stroke="#8E8E93" />
+                  <Tooltip 
+                    formatter={(value: number) => [`₹${value.toFixed(2)}`, 'Balance']}
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'var(--card-bg)' }}
+                  />
+                  <Line type="monotone" dataKey="balance" stroke="#007AFF" strokeWidth={3} dot={{ r: 4, fill: '#007AFF', strokeWidth: 2, stroke: 'var(--card-bg)' }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-full items-center justify-center text-gray-500">No data for selected period</div>
+              <div className="flex h-full items-center justify-center text-gray-500 text-sm font-medium">No data for selected period</div>
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-900/50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Narration</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Debit (₹)</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Credit (₹)</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Balance (₹)</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredEntries.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                      No transactions found in this period.
-                    </td>
-                  </tr>
-                ) : filteredEntries.map((entry) => (
-                  <tr key={entry.id} className={`transition-colors ${entry.status === 'REVERSED' ? 'bg-red-50 dark:bg-red-900/10 opacity-75' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {new Date(entry.date).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                      {entry.reference || '-'}
-                      {entry.status === 'REVERSED' && <span className="ml-2 text-xs text-red-500 font-bold">(REVERSED)</span>}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
-                      {entry.narration}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white font-medium">
-                      {entry.debit !== null ? entry.debit.toFixed(2) : ''}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white font-medium">
-                      {entry.credit !== null ? entry.credit.toFixed(2) : ''}
-                    </td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-bold ${entry.balance < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
-                      {entry.balance.toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {entry.status === 'POSTED' && (
-                        <button 
-                          onClick={() => handleReverse(entry.transactionId)}
-                          disabled={loadingRev === entry.transactionId}
-                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50"
-                        >
-                          {loadingRev === entry.transactionId ? 'Reversing...' : 'Reverse'}
-                        </button>
+          <div>
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              {filteredEntries.length === 0 ? (
+                <div className="text-center text-sm font-medium text-gray-500 py-6">No transactions found.</div>
+              ) : filteredEntries.map((entry) => (
+                <div key={entry.id} className={`bg-[var(--card-bg)] p-5 rounded-3xl shadow-sm border border-black/5 dark:border-white/5 transition-colors ${entry.status === 'REVERSED' ? 'opacity-70 bg-red-500/5' : ''}`}>
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <p className="text-base font-bold text-gray-900 dark:text-white">{new Date(entry.date).toLocaleDateString()}</p>
+                      <p className="text-xs font-bold text-gray-500 tracking-wide mt-0.5">{entry.reference || 'No Ref'}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Balance</p>
+                      <p className={`text-base font-bold ${entry.balance < 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
+                        ₹{entry.balance.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                  <p className={`text-base font-medium mb-4 ${entry.status === 'REVERSED' ? 'line-through text-gray-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                    {entry.narration}
+                  </p>
+                  
+                  <div className="flex justify-between items-end mt-4 border-t border-black/5 dark:border-white/5 pt-4">
+                    <div className="flex space-x-6">
+                      {entry.debit !== null && (
+                        <div>
+                          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Debit</p>
+                          <p className="text-base font-bold text-gray-900 dark:text-white">₹{entry.debit.toFixed(2)}</p>
+                        </div>
                       )}
-                    </td>
+                      {entry.credit !== null && (
+                        <div>
+                          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Credit</p>
+                          <p className="text-base font-bold text-gray-900 dark:text-white">₹{entry.credit.toFixed(2)}</p>
+                        </div>
+                      )}
+                    </div>
+                    {entry.status === 'POSTED' ? (
+                      <button 
+                        onClick={() => handleReverse(entry.transactionId)}
+                        disabled={loadingRev === entry.transactionId}
+                        className="text-red-500 bg-red-500/10 px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50 active:opacity-70 transition-opacity"
+                      >
+                        {loadingRev === entry.transactionId ? '...' : 'Reverse'}
+                      </button>
+                    ) : (
+                      <span className="text-[10px] font-bold text-red-500 bg-red-500/10 px-2 py-1 rounded-md tracking-widest">REVERSED</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="min-w-full divide-y divide-black/5 dark:divide-white/5">
+                <thead className="bg-black/5 dark:bg-white/5">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Date</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Ref</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Narration</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-widest">Debit</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-widest">Credit</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-widest">Balance</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-widest">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-[var(--card-bg)] divide-y divide-black/5 dark:divide-white/5">
+                  {filteredEntries.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-8 text-center text-sm font-medium text-gray-500">No transactions found.</td>
+                    </tr>
+                  ) : filteredEntries.map((entry) => (
+                    <tr key={entry.id} className={`transition-colors ${entry.status === 'REVERSED' ? 'bg-red-500/5 opacity-70' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        {new Date(entry.date).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-bold text-gray-500">
+                        {entry.reference || '-'}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                        {entry.narration}
+                        {entry.status === 'REVERSED' && <span className="ml-2 text-[10px] font-bold text-red-500 bg-red-500/10 px-2 py-0.5 rounded-md">REVERSED</span>}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-right font-bold text-gray-900 dark:text-white">
+                        {entry.debit !== null ? entry.debit.toFixed(2) : '-'}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-right font-bold text-gray-900 dark:text-white">
+                        {entry.credit !== null ? entry.credit.toFixed(2) : '-'}
+                      </td>
+                      <td className={`px-6 py-4 text-sm text-right font-bold ${entry.balance < 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
+                        {entry.balance.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 text-right text-sm">
+                        {entry.status === 'POSTED' && (
+                          <button 
+                            onClick={() => handleReverse(entry.transactionId)}
+                            disabled={loadingRev === entry.transactionId}
+                            className="text-red-500 hover:text-red-600 font-bold disabled:opacity-50 transition-colors"
+                          >
+                            {loadingRev === entry.transactionId ? '...' : 'Reverse'}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
