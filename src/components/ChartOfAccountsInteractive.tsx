@@ -119,15 +119,15 @@ export default function ChartOfAccountsInteractive({ initialAccounts }: { initia
           {filteredAccounts.map((acc) => (
             <div key={acc.id} className={`bg-[var(--card-bg)] p-5 rounded-3xl shadow-sm border border-black/5 dark:border-white/5 transition-colors ${!acc.isActive ? 'opacity-75 bg-gray-50 dark:bg-black/20' : ''}`}>
               <div className="flex justify-between items-start mb-2">
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
+                <div className="flex-1 min-w-0 pr-4">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight truncate">
                     {acc.code} <span className="text-base font-medium text-gray-500 ml-1">{acc.name}</span>
                   </h3>
                   {!acc.isActive && <span className="inline-block mt-1 text-[10px] text-red-500 font-bold bg-red-500/10 px-2 py-1 rounded-md">INACTIVE</span>}
                 </div>
-                <div className="text-right">
+                <div className="text-right shrink min-w-0">
                   <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Balance</p>
-                  <p className={`text-base font-bold ${acc.balance < 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
+                  <p className={`text-base font-bold font-mono break-all ${acc.balance < 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
                     ₹{acc.balance.toFixed(2)}
                   </p>
                 </div>
@@ -223,8 +223,16 @@ export default function ChartOfAccountsInteractive({ initialAccounts }: { initia
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Type</label>
-                  <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full px-4 py-3 md:py-2.5 text-base border border-black/10 dark:border-white/10 rounded-xl bg-transparent dark:text-white focus:border-[#007AFF] focus:ring-1 focus:ring-[#007AFF] transition-colors">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Type (Category)</label>
+                  <input 
+                    list="account-types" 
+                    value={formData.type} 
+                    onChange={e => setFormData({...formData, type: e.target.value.toUpperCase()})} 
+                    className="w-full px-4 py-3 md:py-2.5 text-base border border-black/10 dark:border-white/10 rounded-xl bg-transparent dark:text-white focus:border-[#007AFF] focus:ring-1 focus:ring-[#007AFF] transition-colors"
+                    placeholder="e.g. CASH, SUPPLIER, UTILITIES"
+                    required
+                  />
+                  <datalist id="account-types">
                     <option value="CASH">Cash</option>
                     <option value="BANK">Bank</option>
                     <option value="DIGITAL_SETTLEMENT">Digital/Card</option>
@@ -233,7 +241,7 @@ export default function ChartOfAccountsInteractive({ initialAccounts }: { initia
                     <option value="INCOME">Income</option>
                     <option value="EXPENSE">Expense</option>
                     <option value="OWNER_EQUITY">Equity</option>
-                  </select>
+                  </datalist>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Normal Side</label>

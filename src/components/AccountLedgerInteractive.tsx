@@ -132,34 +132,34 @@ export default function AccountLedgerInteractive({
                 <div className="text-center text-sm font-medium text-gray-500 py-6">No transactions found.</div>
               ) : filteredEntries.map((entry) => (
                 <div key={entry.id} className={`bg-[var(--card-bg)] p-5 rounded-3xl shadow-sm border border-black/5 dark:border-white/5 transition-colors ${entry.status === 'REVERSED' ? 'opacity-70 bg-red-500/5' : ''}`}>
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <p className="text-base font-bold text-gray-900 dark:text-white">{new Date(entry.date).toLocaleDateString()}</p>
-                      <p className="text-xs font-bold text-gray-500 tracking-wide mt-0.5">{entry.reference || 'No Ref'}</p>
+                  <div className="flex justify-between items-start mb-3 gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-base font-bold text-gray-900 dark:text-white truncate">{new Date(entry.date).toLocaleDateString()}</p>
+                      <p className="text-xs font-bold text-gray-500 tracking-wide mt-0.5 truncate">{entry.reference || 'No Ref'}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Balance</p>
-                      <p className={`text-base font-bold ${entry.balance < 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
+                    <div className="text-right shrink min-w-0">
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest truncate">Balance</p>
+                      <p className={`text-base font-bold font-mono break-all ${entry.balance < 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
                         ₹{entry.balance.toFixed(2)}
                       </p>
                     </div>
                   </div>
-                  <p className={`text-base font-medium mb-4 ${entry.status === 'REVERSED' ? 'line-through text-gray-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                  <p className={`text-base font-medium mb-4 break-words ${entry.status === 'REVERSED' ? 'line-through text-gray-400' : 'text-gray-800 dark:text-gray-200'}`}>
                     {entry.narration}
                   </p>
                   
-                  <div className="flex justify-between items-end mt-4 border-t border-black/5 dark:border-white/5 pt-4">
-                    <div className="flex space-x-6">
+                  <div className="flex justify-between items-end mt-4 border-t border-black/5 dark:border-white/5 pt-4 gap-2">
+                    <div className="flex space-x-4 min-w-0">
                       {entry.debit !== null && (
-                        <div>
-                          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Debit</p>
-                          <p className="text-base font-bold text-gray-900 dark:text-white">₹{entry.debit.toFixed(2)}</p>
+                        <div className="shrink min-w-0">
+                          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest truncate">Debit</p>
+                          <p className="text-base font-bold text-gray-900 dark:text-white font-mono break-all">₹{entry.debit.toFixed(2)}</p>
                         </div>
                       )}
                       {entry.credit !== null && (
-                        <div>
-                          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Credit</p>
-                          <p className="text-base font-bold text-gray-900 dark:text-white">₹{entry.credit.toFixed(2)}</p>
+                        <div className="shrink min-w-0">
+                          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest truncate">Credit</p>
+                          <p className="text-base font-bold text-gray-900 dark:text-white font-mono break-all">₹{entry.credit.toFixed(2)}</p>
                         </div>
                       )}
                     </div>

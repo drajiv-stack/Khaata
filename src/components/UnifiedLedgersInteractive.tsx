@@ -181,6 +181,19 @@ export default function UnifiedLedgersInteractive({ initialEntries, accounts }: 
     setLoadingRev(null)
   }
 
+  const handleDelete = async (transactionId: string) => {
+    if (!confirm("Are you sure you want to PERMANENTLY DELETE this entry? This action cannot be undone.")) return
+    setLoadingRev(transactionId) // Reuse loading state
+    const { deleteTransaction } = await import("@/app/actions/transaction")
+    const res = await deleteTransaction(transactionId)
+    if (res.success) {
+      router.refresh()
+    } else {
+      alert(res.error)
+    }
+    setLoadingRev(null)
+  }
+
   const formatCurrency = (n: number) =>
     new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 2 }).format(n)
 
@@ -286,11 +299,11 @@ export default function UnifiedLedgersInteractive({ initialEntries, accounts }: 
                           {entry.narration || entry.reference || "—"}
                         </p>
                       </div>
-                      <div className="text-right ml-3 shrink-0">
-                        <p className="text-base font-bold text-gray-900 dark:text-white font-mono">
+                      <div className="text-right ml-3 shrink min-w-0">
+                        <p className="text-base font-bold text-gray-900 dark:text-white font-mono break-all">
                           {formatCurrency(entry.debits)}
                         </p>
-                        <p className="text-[10px] font-bold text-gray-400 tracking-wide">
+                        <p className="text-[10px] font-bold text-gray-400 tracking-wide truncate">
                           {entry.reference || "No Ref"}
                         </p>
                       </div>
@@ -303,11 +316,11 @@ export default function UnifiedLedgersInteractive({ initialEntries, accounts }: 
                           {entry.lines.map(line => {
                             const isDebit = line.amount >= 0
                             return (
-                              <div key={line.id} className="flex justify-between items-center text-sm">
-                                <span className={isDebit ? "font-bold text-gray-900 dark:text-white" : "font-medium text-gray-500 pl-3"}>
+                              <div key={line.id} className="flex justify-between items-center text-sm gap-2">
+                                <span className={`flex-1 min-w-0 truncate ${isDebit ? "font-bold text-gray-900 dark:text-white" : "font-medium text-gray-500 pl-3"}`}>
                                   {line.accountName}
                                 </span>
-                                <span className={`font-mono ${isDebit ? "font-bold text-gray-900 dark:text-white" : "font-medium text-gray-500"}`}>
+                                <span className={`shrink font-mono break-all ${isDebit ? "font-bold text-gray-900 dark:text-white" : "font-medium text-gray-500"}`}>
                                   {isDebit ? formatCurrency(line.amount) : `(${formatCurrency(Math.abs(line.amount))})`}
                                 </span>
                               </div>
@@ -315,13 +328,22 @@ export default function UnifiedLedgersInteractive({ initialEntries, accounts }: 
                           })}
                         </div>
                         {entry.status === "POSTED" && (
-                          <button
-                            onClick={() => handleReverse(entry.id)}
-                            disabled={loadingRev === entry.id}
-                            className="w-full py-3 text-red-500 bg-red-500/10 rounded-2xl text-sm font-bold disabled:opacity-50 active:opacity-70 transition-opacity"
-                          >
-                            {loadingRev === entry.id ? "Reversing..." : "Reverse Transaction"}
-                          </button>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleReverse(entry.id)}
+                              disabled={loadingRev === entry.id}
+                              className="flex-1 py-3 text-amber-600 bg-amber-500/10 rounded-2xl text-sm font-bold disabled:opacity-50 active:opacity-70 transition-opacity"
+                            >
+                              {loadingRev === entry.id ? "Working..." : "Reverse"}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(entry.id)}
+                              disabled={loadingRev === entry.id}
+                              className="flex-1 py-3 text-red-500 bg-red-500/10 rounded-2xl text-sm font-bold disabled:opacity-50 active:opacity-70 transition-opacity"
+                            >
+                              {loadingRev === entry.id ? "Working..." : "Hard Delete"}
+                            </button>
+                          </div>
                         )}
                       </div>
                     )}
@@ -374,13 +396,22 @@ export default function UnifiedLedgersInteractive({ initialEntries, accounts }: 
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right align-top">
                           {entry.status === "POSTED" && (
-                            <button
-                              onClick={() => handleReverse(entry.id)}
-                              disabled={loadingRev === entry.id}
-                              className="text-red-500 hover:text-red-600 font-bold text-sm disabled:opacity-50 transition-colors"
-                            >
-                              {loadingRev === entry.id ? "Reversing..." : "Reverse"}
-                            </button>
+                            <div className="flex flex-col items-end space-y-2">
+                              <button
+                                onClick={() => handleReverse(entry.id)}
+                                disabled={loadingRev === entry.id}
+                                className="text-amber-600 hover:text-amber-700 font-bold text-sm disabled:opacity-50 transition-colors"
+                              >
+                                {loadingRev === entry.id ? "Working..." : "Reverse"}
+                              </button>
+                              <button
+                                onClick={() => handleDelete(entry.id)}
+                                disabled={loadingRev === entry.id}
+                                className="text-red-500 hover:text-red-600 font-bold text-sm disabled:opacity-50 transition-colors"
+                              >
+                                {loadingRev === entry.id ? "Working..." : "Hard Delete"}
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>
@@ -411,19 +442,19 @@ export default function UnifiedLedgersInteractive({ initialEntries, accounts }: 
                   <Link
                     key={acc.account.id}
                     href={`/accounts/${acc.account.id}`}
-                    className="flex items-center justify-between px-5 py-4 hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 transition-colors"
+                    className="flex items-center justify-between px-5 py-4 hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 transition-colors gap-2"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-base font-bold text-gray-900 dark:text-white truncate">{acc.account.name}</p>
-                      <p className="text-xs font-medium text-gray-500 mt-0.5">
+                      <p className="text-xs font-medium text-gray-500 mt-0.5 truncate">
                         {acc.account.code || "No Code"} · Dr: {formatCurrency(acc.totalDebit)} · Cr: {formatCurrency(acc.totalCredit)}
                       </p>
                     </div>
-                    <div className="text-right ml-3 shrink-0">
-                      <p className={`text-lg font-bold font-mono ${acc.displayBalance >= 0 ? "text-gray-900 dark:text-white" : "text-red-500"}`}>
+                    <div className="text-right ml-3 shrink min-w-0">
+                      <p className={`text-lg font-bold font-mono break-all ${acc.displayBalance >= 0 ? "text-gray-900 dark:text-white" : "text-red-500"}`}>
                         {formatCurrency(Math.abs(acc.displayBalance))}
                       </p>
-                      <p className="text-[10px] font-bold text-gray-400 tracking-widest">
+                      <p className="text-[10px] font-bold text-gray-400 tracking-widest truncate">
                         {acc.displayBalance >= 0 ? (acc.account.normalSide === "DEBIT" ? "DR" : "CR") : (acc.account.normalSide === "DEBIT" ? "CR" : "DR")}
                       </p>
                     </div>

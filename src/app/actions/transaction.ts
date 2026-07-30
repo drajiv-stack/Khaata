@@ -139,3 +139,44 @@ export async function reverseTransaction(transactionId: string, reason: string) 
   }
 }
 
+export async function deleteTransaction(transactionId: string) {
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized" }
+    }
+
+    // Run in a transaction to ensure both lines and the parent are deleted together
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete all child transaction lines
+      await tx.transactionLine.deleteMany({
+        where: { transactionId }
+      })
+
+      // 2. Delete the parent transaction
+      await tx.transaction.delete({
+        where: { id: transactionId }
+      })
+
+      // 3. Log the hard deletion
+      await tx.auditLog.create({
+        data: {
+          action: "DELETE",
+          entityType: "Transaction",
+          entityId: transactionId,
+          userId: session.user.id,
+          beforeJson: { note: "Transaction permanently deleted" }
+        }
+      })
+    })
+    
+    revalidatePath("/ledger")
+    revalidatePath("/audit")
+    revalidatePath("/dashboard")
+    
+    return { success: true }
+  } catch (error: any) {
+    console.error("Delete Transaction Error:", error)
+    return { success: false, error: error.message || "Failed to delete transaction" }
+  }
+}
