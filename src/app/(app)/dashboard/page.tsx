@@ -28,7 +28,7 @@ export default async function DashboardPage() {
     // Fetch 7-day trend for Cash/Bank accounts
     const trendRaw = await prisma.$queryRaw`
       SELECT 
-        DATE(t.date) as date_str,
+        DATE(t.txn_date) as date_str,
         SUM(CASE WHEN tl.amount > 0 THEN tl.amount ELSE 0 END) as inflow,
         SUM(CASE WHEN tl.amount < 0 THEN ABS(tl.amount) ELSE 0 END) as outflow
       FROM transactions t
@@ -36,9 +36,9 @@ export default async function DashboardPage() {
       JOIN accounts a ON tl.account_id = a.id
       WHERE t.status = 'POSTED' 
         AND (a.code LIKE 'CASH%' OR a.code LIKE 'BANK%' OR a.code LIKE 'DIG%')
-        AND t.date >= CURRENT_DATE - INTERVAL '6 days'
-      GROUP BY DATE(t.date)
-      ORDER BY DATE(t.date) ASC
+        AND t.txn_date >= CURRENT_DATE - INTERVAL '6 days'
+      GROUP BY DATE(t.txn_date)
+      ORDER BY DATE(t.txn_date) ASC
     `
     
     // Format trend data for Recharts
