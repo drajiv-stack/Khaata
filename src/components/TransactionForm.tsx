@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 
 type Account = {
   id: string
-  code: string
+  code: string | null
   name: string
   type: string
 }
@@ -60,7 +60,7 @@ export default function TransactionForm({ accounts: initialAccounts }: { account
     const newLine: LineItem = {
       id: Date.now(),
       accountId: account.id,
-      accountName: `${account.code} - ${account.name}`,
+      accountName: account.code ? `${account.code} - ${account.name}` : account.name,
       type: currentType,
       amount: parseFloat(currentAmount)
     }
@@ -146,7 +146,7 @@ export default function TransactionForm({ accounts: initialAccounts }: { account
     const res = await createAccount(newAccForm)
     
     if (res.success && res.account) {
-      setLocalAccounts(prev => [...prev, res.account as Account].sort((a,b) => a.code.localeCompare(b.code)))
+      setLocalAccounts(prev => [...prev, res.account as Account].sort((a,b) => (a.code || "").localeCompare(b.code || "")))
       setCurrentAccount(res.account.id)
       setShowModal(false)
       setNewAccForm({ code: "", name: "", type: "ASSET", normalSide: "DEBIT" })
@@ -251,7 +251,7 @@ export default function TransactionForm({ accounts: initialAccounts }: { account
                 + Add New Account...
               </option>
               {localAccounts.map(acc => (
-                <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
+                <option key={acc.id} value={acc.id}>{acc.code ? `${acc.code} - ` : ''}{acc.name}</option>
               ))}
             </select>
           </div>
