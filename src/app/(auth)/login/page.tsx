@@ -17,14 +17,8 @@ function LoginForm() {
     setLoading(true)
     setError(null)
     
-    const formData = new FormData(e.currentTarget)
-    const email = formData.get("email") as string
-    const password = formData.get("password") as string
-
     try {
       const res = await signIn("credentials", {
-        email,
-        password,
         redirect: false,
       })
 
@@ -46,42 +40,13 @@ function LoginForm() {
       <div className="max-w-md w-full space-y-8 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
         <div className="text-center">
           <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">
-            PumpLedger
+            Welcome Nishant
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Sign in to access your account
+            Click the button below to access your ledger.
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300" htmlFor="email">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base dark:bg-gray-700 dark:text-white"
-                placeholder="owner@example.com"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300" htmlFor="password">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base dark:bg-gray-700 dark:text-white"
-                placeholder="••••••••"
-              />
-            </div>
-          </div>
-
           {error && (
             <div className="text-red-500 text-sm text-center font-medium">
               {error}
@@ -92,9 +57,9 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-sm text-lg font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-95"
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? "Entering..." : "Click to Enter"}
             </button>
           </div>
         </form>
