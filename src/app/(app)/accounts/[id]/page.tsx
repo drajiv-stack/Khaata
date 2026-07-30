@@ -9,12 +9,20 @@ export const dynamic = "force-dynamic"
 export default async function AccountLedgerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   
-  const account = await prisma.account.findUnique({
+  const rawAccount = await prisma.account.findUnique({
     where: { id }
   })
 
-  if (!account) {
+  if (!rawAccount) {
     notFound()
+  }
+
+  // Convert Decimal to number for Client Component serialization
+  const account = {
+    ...rawAccount,
+    openingBalance: Number(rawAccount.openingBalance),
+    varianceAmberThreshold: rawAccount.varianceAmberThreshold ? Number(rawAccount.varianceAmberThreshold) : null,
+    varianceRedThreshold: rawAccount.varianceRedThreshold ? Number(rawAccount.varianceRedThreshold) : null,
   }
 
   // Fetch all transaction lines for this account
