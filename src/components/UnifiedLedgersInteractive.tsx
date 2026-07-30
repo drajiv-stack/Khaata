@@ -567,7 +567,8 @@ export default function UnifiedLedgersInteractive({ initialEntries, accounts }: 
             )
           })()}
         </div>
-      )}
+      {/* Spacer for mobile bottom nav */}
+      <div className="h-24 md:hidden" />
     </div>
   )
 }

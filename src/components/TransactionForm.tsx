@@ -20,6 +20,12 @@ type LineItem = {
   amount: number
 }
 
+function generateRef() {
+  const now = new Date()
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  return `TXN-${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`
+}
+
 export default function TransactionForm({ accounts: initialAccounts }: { accounts: Account[] }) {
   const router = useRouter()
   
@@ -27,7 +33,6 @@ export default function TransactionForm({ accounts: initialAccounts }: { account
 
   // Header state
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
-  const [reference, setReference] = useState("")
   const [narration, setNarration] = useState("")
   
   // Current Line state
@@ -99,32 +104,33 @@ export default function TransactionForm({ accounts: initialAccounts }: { account
     }
 
     if (lines.length < 2) {
-      setError("You must provide at least two lines for a double-entry transaction.")
-      return
-    }
-    
-    if (!narration) {
-      setError("Narration is required.")
+      setError("You must provide at least two entries for a double-entry transaction.")
       return
     }
 
     setLoading(true)
-    const formattedLines = lines.map(l => ({
-      accountId: l.accountId,
-      amount: l.type === 'DEBIT' ? l.amount : -l.amount
-    }))
+    try {
+      const formattedLines = lines.map(l => ({
+        accountId: l.accountId,
+        amount: l.type === 'DEBIT' ? l.amount : -l.amount
+      }))
 
-    const res = await createTransaction({
-      date,
-      reference,
-      narration,
-      lines: formattedLines
-    })
+      const res = await createTransaction({
+        date,
+        reference: generateRef(),
+        narration: narration || "",
+        lines: formattedLines
+      })
 
-    if (res.success) {
-      router.push("/dashboard")
-    } else {
-      setError(res.error || "An unknown error occurred")
+      if (res.success) {
+        router.push("/dashboard")
+      } else {
+        setError(res.error || "An unknown error occurred")
+        setLoading(false)
+      }
+    } catch (err: any) {
+      console.error("Submit error:", err)
+      setError(err?.message || "An unexpected error occurred")
       setLoading(false)
     }
   }
@@ -157,55 +163,58 @@ export default function TransactionForm({ accounts: initialAccounts }: { account
   }
 
   return (
-    <div className="space-y-8 relative max-w-5xl mx-auto">
+    <div className="space-y-5 relative max-w-5xl mx-auto">
       {/* Account Creation Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md px-4">
           <div className="bg-[var(--card-bg)] rounded-3xl shadow-2xl w-full max-w-md border border-black/5 dark:border-white/10">
             <div className="p-6 border-b border-black/5 dark:border-white/10 flex justify-between items-center">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Create New Account</h3>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-2">
                 ✕
               </button>
             </div>
             <form onSubmit={handleCreateAccount} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Account Code</label>
+                <label className="block text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Account Code</label>
                 <input type="text" required placeholder="e.g. CUST-001"
                        value={newAccForm.code} onChange={e => setNewAccForm({...newAccForm, code: e.target.value})}
-                       className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 dark:bg-gray-700 dark:text-white" />
+                       className="block w-full rounded-xl border border-black/10 dark:border-white/10 px-4 py-3 text-base dark:bg-[#1C1C1E] dark:text-white bg-white focus:ring-2 focus:ring-[#007AFF] focus:border-transparent outline-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Account Name</label>
+                <label className="block text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Account Name</label>
                 <input type="text" required placeholder="e.g. Acme Corp"
                        value={newAccForm.name} onChange={e => setNewAccForm({...newAccForm, name: e.target.value})}
-                       className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 dark:bg-gray-700 dark:text-white" />
+                       className="block w-full rounded-xl border border-black/10 dark:border-white/10 px-4 py-3 text-base dark:bg-[#1C1C1E] dark:text-white bg-white focus:ring-2 focus:ring-[#007AFF] focus:border-transparent outline-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Type</label>
+                <label className="block text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Type</label>
                 <select required value={newAccForm.type} onChange={e => setNewAccForm({...newAccForm, type: e.target.value})}
-                        className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 dark:bg-gray-700 dark:text-white">
-                  <option value="ASSET">Asset</option>
-                  <option value="LIABILITY">Liability</option>
-                  <option value="OWNER_EQUITY">Owner Equity</option>
-                  <option value="REVENUE">Revenue</option>
+                        className="block w-full rounded-xl border border-black/10 dark:border-white/10 px-4 py-3 text-base dark:bg-[#1C1C1E] dark:text-white bg-white focus:ring-2 focus:ring-[#007AFF] focus:border-transparent outline-none">
+                  <option value="CASH">Cash</option>
+                  <option value="BANK">Bank</option>
+                  <option value="DIGITAL_SETTLEMENT">Digital Settlement</option>
+                  <option value="SUPPLIER">Supplier</option>
+                  <option value="CUSTOMER">Customer</option>
+                  <option value="INCOME">Income</option>
                   <option value="EXPENSE">Expense</option>
+                  <option value="OWNER_EQUITY">Owner Equity</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Normal Side</label>
+                <label className="block text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Normal Side</label>
                 <select required value={newAccForm.normalSide} onChange={e => setNewAccForm({...newAccForm, normalSide: e.target.value})}
-                        className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 dark:bg-gray-700 dark:text-white">
+                        className="block w-full rounded-xl border border-black/10 dark:border-white/10 px-4 py-3 text-base dark:bg-[#1C1C1E] dark:text-white bg-white focus:ring-2 focus:ring-[#007AFF] focus:border-transparent outline-none">
                   <option value="DEBIT">Debit</option>
                   <option value="CREDIT">Credit</option>
                 </select>
               </div>
-              {newAccError && <p className="text-red-500 text-sm font-medium">{newAccError}</p>}
-              <div className="pt-4 flex space-x-3">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              {newAccError && <p className="text-red-500 text-sm font-bold">{newAccError}</p>}
+              <div className="pt-2 flex space-x-3">
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-3 border border-black/10 dark:border-white/10 rounded-2xl text-gray-700 dark:text-gray-300 font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                   Cancel
                 </button>
-                <button type="submit" disabled={newAccLoading} className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md disabled:opacity-50 transition-colors">
+                <button type="submit" disabled={newAccLoading} className="flex-1 py-3 bg-[#007AFF] dark:bg-[#0A84FF] text-white rounded-2xl font-bold disabled:opacity-50 hover:opacity-90 transition-opacity">
                   {newAccLoading ? "Saving..." : "Save Account"}
                 </button>
               </div>
@@ -214,40 +223,28 @@ export default function TransactionForm({ accounts: initialAccounts }: { account
         </div>
       )}
 
-      <div className="bg-[var(--card-bg)] rounded-3xl shadow-sm border border-black/5 dark:border-white/5 p-6 md:p-8">
-        <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white tracking-tight">Transaction Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
-            <input type="date" required value={date} onChange={e => setDate(e.target.value)}
-                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:text-white px-3 py-3 md:py-2 border" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Reference No.</label>
-            <input type="text" value={reference} onChange={e => setReference(e.target.value)} placeholder="e.g. INV-2023-001"
-                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:text-white px-3 py-3 md:py-2 border" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Narration</label>
-            <input type="text" required value={narration} onChange={e => setNarration(e.target.value)} placeholder="Brief description..."
-                   className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:text-white px-3 py-3 md:py-2 border" />
-          </div>
-        </div>
+      {/* Date Only Header */}
+      <div className="bg-[var(--card-bg)] rounded-3xl shadow-sm border border-black/5 dark:border-white/5 p-5">
+        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Transaction Date</label>
+        <input type="date" required value={date} onChange={e => setDate(e.target.value)}
+               className="block w-full md:w-64 rounded-xl border border-black/10 dark:border-white/10 px-4 py-3 text-base font-bold dark:bg-[#1C1C1E] dark:text-white bg-white focus:ring-2 focus:ring-[#007AFF] focus:border-transparent outline-none" />
       </div>
 
-      <div className="bg-[var(--card-bg)] rounded-3xl shadow-sm border border-black/5 dark:border-white/5 p-6 md:p-8">
-        <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white tracking-tight">Add Line</h2>
-        <form onSubmit={handleAddLine} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-          <div className="col-span-1 md:col-span-6">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Account</label>
+      {/* Add Entries */}
+      <div className="bg-[var(--card-bg)] rounded-3xl shadow-sm border border-black/5 dark:border-white/5 p-5">
+        <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white tracking-tight">Add Entries</h2>
+        <form onSubmit={handleAddLine} className="space-y-4">
+          {/* Account Select */}
+          <div>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Account</label>
             <select 
               required 
               value={currentAccount} 
               onChange={handleAccountSelect}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:text-white px-3 py-3 md:py-2 border"
+              className="block w-full rounded-xl border border-black/10 dark:border-white/10 px-4 py-3 text-base dark:bg-[#1C1C1E] dark:text-white bg-white focus:ring-2 focus:ring-[#007AFF] focus:border-transparent outline-none"
             >
               <option value="" disabled>Select an account...</option>
-              <option value="ADD_NEW" className="font-bold text-blue-600 dark:text-blue-400 border-b border-gray-200 dark:border-gray-700">
+              <option value="ADD_NEW" className="font-bold">
                 + Add New Account...
               </option>
               {localAccounts.map(acc => (
@@ -255,147 +252,192 @@ export default function TransactionForm({ accounts: initialAccounts }: { account
               ))}
             </select>
           </div>
-          <div className="col-span-1 md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Type</label>
-            <select 
-              value={currentType} 
-              onChange={e => setCurrentType(e.target.value as 'DEBIT'|'CREDIT')}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:text-white px-3 py-3 md:py-2 border font-medium"
-            >
-              <option value="DEBIT">Debit</option>
-              <option value="CREDIT">Credit</option>
-            </select>
-          </div>
-          <div className="col-span-1 md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount (₹)</label>
-            <input type="number" step="0.01" min="0.01" required placeholder="0.00"
-                   value={currentAmount} onChange={e => setCurrentAmount(e.target.value)}
-                   className="mt-1 block w-full text-right rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:text-white px-3 py-3 md:py-2 border" />
-          </div>
-          <div className="col-span-1 md:col-span-2">
-            <button type="submit" className="w-full py-3 px-4 shadow-sm text-base font-bold rounded-xl text-white bg-[#007AFF] hover:bg-[#007AFF]/90 dark:bg-[#0A84FF] dark:hover:bg-[#0A84FF]/90 transition-colors">
-              + Add Line
-            </button>
-          </div>
-        </form>
-      </div>
 
-      <div className="bg-[var(--card-bg)] rounded-3xl shadow-sm border border-black/5 dark:border-white/5 overflow-hidden">
-        <div className="p-6 border-b border-black/5 dark:border-white/5">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Ledger Preview</h2>
-        </div>
-        
-        <div className="overflow-x-auto">
-          {/* Mobile Card View for Lines */}
-          <div className="md:hidden p-4 space-y-3 bg-gray-50 dark:bg-gray-900/50">
-            {lines.length === 0 ? (
-              <div className="text-center text-sm text-gray-500 py-4">No entries added yet.</div>
-            ) : (
-              lines.map(line => (
-                <div key={line.id} className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 flex justify-between items-center shadow-sm">
-                  <div className="flex-1 truncate pr-2">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{line.accountName}</p>
-                    <p className={`text-xs font-bold mt-1 ${line.type === 'DEBIT' ? 'text-green-600' : 'text-blue-600'}`}>
-                      {line.type}
-                    </p>
-                  </div>
-                  <div className="text-right flex flex-col items-end">
-                    <p className="text-sm font-bold text-gray-900 dark:text-white mb-2">₹{line.amount.toFixed(2)}</p>
-                    <button onClick={() => removeLine(line.id)} className="text-xs text-red-600 hover:text-red-800 font-medium px-2 py-1 bg-red-50 rounded dark:bg-red-900/30">
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-            <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm mt-4">
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-500">Total Debit</span>
-                <span className="font-bold text-gray-900 dark:text-white">₹{totalDebit.toFixed(2)}</span>
+          {/* Debit/Credit Toggle + Amount */}
+          <div className="flex gap-3 items-end">
+            {/* Toggle */}
+            <div className="shrink-0">
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Type</label>
+              <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setCurrentType("DEBIT")}
+                  className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                    currentType === "DEBIT"
+                      ? "bg-emerald-500 text-white shadow-sm"
+                      : "text-gray-500 dark:text-gray-400"
+                  }`}
+                >
+                  Debit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentType("CREDIT")}
+                  className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                    currentType === "CREDIT"
+                      ? "bg-[#007AFF] dark:bg-[#0A84FF] text-white shadow-sm"
+                      : "text-gray-500 dark:text-gray-400"
+                  }`}
+                >
+                  Credit
+                </button>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Total Credit</span>
-                <span className="font-bold text-gray-900 dark:text-white">₹{totalCredit.toFixed(2)}</span>
-              </div>
+            </div>
+
+            {/* Amount */}
+            <div className="flex-1">
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Amount (₹)</label>
+              <input type="number" step="0.01" min="0.01" required placeholder="0.00"
+                     value={currentAmount} onChange={e => setCurrentAmount(e.target.value)}
+                     className="block w-full text-right rounded-xl border border-black/10 dark:border-white/10 px-4 py-3 text-base font-bold dark:bg-[#1C1C1E] dark:text-white bg-white focus:ring-2 focus:ring-[#007AFF] focus:border-transparent outline-none font-mono" />
             </div>
           </div>
 
-          {/* Desktop Table View */}
-          <table className="hidden md:table min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900/50">
-              <tr>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Account</th>
-                <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Debit</th>
-                <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Credit</th>
-                <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {lines.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                    No entries added yet. Use the form above to add lines.
-                  </td>
-                </tr>
-              ) : lines.map((line) => (
-                <tr key={line.id}>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white font-medium">
-                    {line.accountName}
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
-                    {line.type === 'DEBIT' ? line.amount.toFixed(2) : '-'}
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
-                    {line.type === 'CREDIT' ? line.amount.toFixed(2) : '-'}
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-right font-medium">
-                    <button onClick={() => removeLine(line.id)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot className="bg-gray-50 dark:bg-gray-900/50">
-              <tr>
-                <td className="px-4 py-3 text-sm font-bold text-gray-900 dark:text-white text-right uppercase">Total</td>
-                <td className="px-4 py-3 text-sm font-bold text-gray-900 dark:text-white text-right">
-                  ₹{totalDebit.toFixed(2)}
-                </td>
-                <td className="px-4 py-3 text-sm font-bold text-gray-900 dark:text-white text-right">
-                  ₹{totalCredit.toFixed(2)}
-                </td>
-                <td className="px-4 py-3"></td>
-              </tr>
-            </tfoot>
-          </table>
+          <button type="submit" className="w-full py-3.5 shadow-sm text-base font-bold rounded-2xl text-white bg-[#007AFF] dark:bg-[#0A84FF] hover:opacity-90 transition-opacity active:opacity-70">
+            + Add Entry
+          </button>
+        </form>
+      </div>
+
+      {/* Ledger Preview */}
+      <div className="bg-[var(--card-bg)] rounded-3xl shadow-sm border border-black/5 dark:border-white/5 overflow-hidden">
+        <div className="px-5 py-4 border-b border-black/5 dark:border-white/5">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Ledger Preview</h2>
+        </div>
+        
+        {/* Mobile Card View */}
+        <div className="md:hidden p-4 space-y-2">
+          {lines.length === 0 ? (
+            <div className="text-center text-sm font-medium text-gray-400 py-6">No entries added yet.</div>
+          ) : (
+            lines.map(line => (
+              <div key={line.id} className="bg-black/5 dark:bg-white/5 p-4 rounded-2xl flex justify-between items-center">
+                <div className="flex-1 min-w-0 pr-3">
+                  <p className="text-base font-bold text-gray-900 dark:text-white truncate">{line.accountName}</p>
+                  <span className={`text-xs font-bold mt-1 inline-block px-2 py-0.5 rounded-md ${
+                    line.type === 'DEBIT' ? 'text-emerald-500 bg-emerald-500/10' : 'text-[#007AFF] bg-[#007AFF]/10'
+                  }`}>
+                    {line.type}
+                  </span>
+                </div>
+                <div className="text-right flex items-center gap-3">
+                  <p className="text-base font-bold text-gray-900 dark:text-white font-mono">₹{line.amount.toFixed(2)}</p>
+                  <button onClick={() => removeLine(line.id)} className="text-red-500 bg-red-500/10 p-2 rounded-xl text-xs font-bold active:opacity-70">
+                    ✕
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+
+          {/* Totals */}
+          {lines.length > 0 && (
+            <div className="bg-black/5 dark:bg-white/5 p-4 rounded-2xl mt-3 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500 font-bold">Total Debit</span>
+                <span className="font-bold text-gray-900 dark:text-white font-mono">₹{totalDebit.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500 font-bold">Total Credit</span>
+                <span className="font-bold text-gray-900 dark:text-white font-mono">₹{totalCredit.toFixed(2)}</span>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="p-6 border-t border-black/5 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50/50 dark:bg-black/20">
-          <div className="text-base">
-            {!isBalanced && lines.length > 0 && (
-              <span className="text-red-500 font-bold">
-                Difference: ₹{Math.abs(totalDebit - totalCredit).toFixed(2)} — Unbalanced
-              </span>
+        {/* Desktop Table View */}
+        <table className="hidden md:table min-w-full divide-y divide-black/5 dark:divide-white/5">
+          <thead className="bg-black/5 dark:bg-white/5">
+            <tr>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Account</th>
+              <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-widest">Debit</th>
+              <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-widest">Credit</th>
+              <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-widest w-20"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-black/5 dark:divide-white/5">
+            {lines.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="px-6 py-8 text-center text-sm font-medium text-gray-400">
+                  No entries added yet. Use the form above to add entries.
+                </td>
+              </tr>
+            ) : lines.map((line) => (
+              <tr key={line.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white">
+                  {line.accountName}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900 dark:text-white font-mono">
+                  {line.type === 'DEBIT' ? `₹${line.amount.toFixed(2)}` : '—'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900 dark:text-white font-mono">
+                  {line.type === 'CREDIT' ? `₹${line.amount.toFixed(2)}` : '—'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right">
+                  <button onClick={() => removeLine(line.id)} className="text-red-500 hover:text-red-600 font-bold text-sm transition-colors">
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          {lines.length > 0 && (
+            <tfoot className="bg-black/5 dark:bg-white/5">
+              <tr>
+                <td className="px-6 py-4 text-sm font-bold text-gray-900 dark:text-white text-right uppercase tracking-widest">Total</td>
+                <td className="px-6 py-4 text-sm font-bold text-gray-900 dark:text-white text-right font-mono">₹{totalDebit.toFixed(2)}</td>
+                <td className="px-6 py-4 text-sm font-bold text-gray-900 dark:text-white text-right font-mono">₹{totalCredit.toFixed(2)}</td>
+                <td className="px-6 py-4"></td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
+
+        {/* Submit Footer */}
+        <div className="p-5 border-t border-black/5 dark:border-white/5 space-y-4 bg-gray-50/50 dark:bg-black/20">
+          {/* Status */}
+          <div className="text-sm">
+            {lines.length < 2 && (
+              <span className="text-gray-400 font-medium">{lines.length === 0 ? "Add at least 2 entries to get started." : "Add one more entry to complete."}</span>
             )}
-            {isBalanced && lines.length > 0 && (
-              <span className="text-emerald-500 font-bold">
-                Transaction is balanced
-              </span>
+            {!isBalanced && lines.length > 1 && (
+              <span className="text-red-500 font-bold">⚠ Difference: ₹{Math.abs(totalDebit - totalCredit).toFixed(2)} — Unbalanced</span>
+            )}
+            {isBalanced && lines.length > 1 && (
+              <span className="text-emerald-500 font-bold">✓ Balanced and ready to post</span>
             )}
           </div>
-          <div className="flex flex-col md:flex-row items-center w-full md:w-auto mt-4 md:mt-0">
-            {error && <span className="text-sm text-red-500 font-bold mb-4 md:mb-0 md:mr-6">{error}</span>}
-            <button
-              onClick={handleSubmit}
-              disabled={loading || !isBalanced || lines.length < 2 || !narration}
-              className="w-full md:w-auto inline-flex justify-center py-4 md:py-3 px-10 shadow-sm text-base font-bold rounded-2xl text-white bg-emerald-500 hover:bg-emerald-600 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
-            >
-              {loading ? "Posting..." : "Post Transaction"}
-            </button>
-          </div>
+
+          {/* Narration */}
+          <input
+            type="text"
+            value={narration}
+            onChange={e => setNarration(e.target.value)}
+            placeholder="Narration (optional) — e.g. Cash sale to customer"
+            className="block w-full rounded-xl border border-black/10 dark:border-white/10 px-4 py-3 text-base dark:bg-[#1C1C1E] dark:text-white bg-white focus:ring-2 focus:ring-[#007AFF] focus:border-transparent outline-none"
+          />
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4">
+              <p className="text-red-500 font-bold text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Post Button */}
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={loading || !isBalanced || lines.length < 2}
+            className="w-full py-4 shadow-sm text-base font-bold rounded-2xl text-white bg-emerald-500 hover:bg-emerald-600 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+          >
+            {loading ? "Posting..." : "Post Transaction"}
+          </button>
         </div>
       </div>
+
+      {/* Spacer for mobile bottom nav */}
+      <div className="h-24 md:hidden" />
     </div>
   )
 }

@@ -12,7 +12,7 @@ export async function createAccount(data: {
   normalSide: string
 }) {
   const session = await auth()
-  if (!session?.user) throw new Error("Unauthorized")
+  if (!session?.user) return { success: false, error: "Unauthorized" }
   
   try {
     const account = await prisma.account.create({
@@ -21,6 +21,7 @@ export async function createAccount(data: {
         name: data.name.trim(),
         type: data.type,
         normalSide: data.normalSide,
+        openingDate: new Date(),
         isActive: true
       },
       select: { id: true, code: true, name: true, type: true }
@@ -42,7 +43,7 @@ export async function editAccount(id: string, data: {
   normalSide: string
 }) {
   const session = await auth()
-  if (!session?.user) throw new Error("Unauthorized")
+  if (!session?.user) return { success: false, error: "Unauthorized" }
   
   try {
     const account = await prisma.account.update({
@@ -67,7 +68,7 @@ export async function editAccount(id: string, data: {
 
 export async function toggleAccountStatus(id: string, isActive: boolean) {
   const session = await auth()
-  if (!session?.user) throw new Error("Unauthorized")
+  if (!session?.user) return { success: false, error: "Unauthorized" }
   
   try {
     const account = await prisma.account.update({

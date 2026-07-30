@@ -18,13 +18,13 @@ export async function createTransaction(data: {
   lines: TransactionLineInput[]
 }) {
   const session = await auth()
-  if (!session?.user) throw new Error("Unauthorized")
+  if (!session?.user) return { success: false, error: "Unauthorized" }
 
   // Validate balance
   const sum = data.lines.reduce((acc, line) => acc + line.amount, 0)
   // Dealing with floating point precision
   if (Math.abs(sum) > 0.001) {
-    throw new Error("Transaction is not balanced (Debits != Credits)")
+    return { success: false, error: "Transaction is not balanced (Debits != Credits)" }
   }
 
   try {
@@ -71,7 +71,7 @@ export async function createTransaction(data: {
 
 export async function reverseTransaction(transactionId: string, reason: string) {
   const session = await auth()
-  if (!session?.user) throw new Error("Unauthorized")
+  if (!session?.user) return { success: false, error: "Unauthorized" }
 
   try {
     const result = await prisma.$transaction(async (tx) => {

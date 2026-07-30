@@ -215,16 +215,16 @@ export default function ChartOfAccountsInteractive({ initialAccounts }: { initia
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Code</label>
-                <input required value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} className="w-full px-4 py-3 md:py-2.5 border border-black/10 dark:border-white/10 rounded-xl bg-transparent dark:text-white focus:border-[#007AFF] focus:ring-1 focus:ring-[#007AFF] transition-colors" placeholder="e.g. CASH-01" />
+                <input required value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} className="w-full px-4 py-3 md:py-2.5 text-base border border-black/10 dark:border-white/10 rounded-xl bg-transparent dark:text-white focus:border-[#007AFF] focus:ring-1 focus:ring-[#007AFF] transition-colors" placeholder="e.g. CASH-01" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Name</label>
-                <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-3 md:py-2.5 border border-black/10 dark:border-white/10 rounded-xl bg-transparent dark:text-white focus:border-[#007AFF] focus:ring-1 focus:ring-[#007AFF] transition-colors" placeholder="e.g. Main Cash Drawer" />
+                <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-3 md:py-2.5 text-base border border-black/10 dark:border-white/10 rounded-xl bg-transparent dark:text-white focus:border-[#007AFF] focus:ring-1 focus:ring-[#007AFF] transition-colors" placeholder="e.g. Main Cash Drawer" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Type</label>
-                  <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full px-4 py-3 md:py-2.5 border border-black/10 dark:border-white/10 rounded-xl bg-transparent dark:text-white focus:border-[#007AFF] focus:ring-1 focus:ring-[#007AFF] transition-colors">
+                  <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full px-4 py-3 md:py-2.5 text-base border border-black/10 dark:border-white/10 rounded-xl bg-transparent dark:text-white focus:border-[#007AFF] focus:ring-1 focus:ring-[#007AFF] transition-colors">
                     <option value="CASH">Cash</option>
                     <option value="BANK">Bank</option>
                     <option value="DIGITAL_SETTLEMENT">Digital/Card</option>
@@ -237,7 +237,7 @@ export default function ChartOfAccountsInteractive({ initialAccounts }: { initia
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Normal Side</label>
-                  <select value={formData.normalSide} onChange={e => setFormData({...formData, normalSide: e.target.value})} className="w-full px-4 py-3 md:py-2.5 border border-black/10 dark:border-white/10 rounded-xl bg-transparent dark:text-white focus:border-[#007AFF] focus:ring-1 focus:ring-[#007AFF] transition-colors">
+                  <select value={formData.normalSide} onChange={e => setFormData({...formData, normalSide: e.target.value})} className="w-full px-4 py-3 md:py-2.5 text-base border border-black/10 dark:border-white/10 rounded-xl bg-transparent dark:text-white focus:border-[#007AFF] focus:ring-1 focus:ring-[#007AFF] transition-colors">
                     <option value="DEBIT">Debit</option>
                     <option value="CREDIT">Credit</option>
                   </select>
@@ -255,6 +255,8 @@ export default function ChartOfAccountsInteractive({ initialAccounts }: { initia
           </div>
         </div>
       )}
+      {/* Spacer for mobile bottom nav */}
+      <div className="h-24 md:hidden" />
     </div>
   )
 }

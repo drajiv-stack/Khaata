@@ -237,7 +237,8 @@ export default function AccountLedgerInteractive({
             </div>
           </div>
         )}
-      </div>
+      {/* Spacer for mobile bottom nav */}
+      <div className="h-24 md:hidden" />
     </div>
   )
 }
