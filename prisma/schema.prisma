@@ -93,7 +93,7 @@ model Transaction {
   narration                String?
   reference                String?
   status                   String   // DRAFT | POSTED | REVERSED
-  reversesTransactionId    String?  @db.Uuid @map("reverses_transaction_id")
+  reversesTransactionId    String?  @unique @db.Uuid @map("reverses_transaction_id")
   reversedByTransactionId  String?  @unique @db.Uuid @map("reversed_by_transaction_id")
   source                   String   // MANUAL | DOCUMENT_REVIEW | AUTO_APPROVED | ADJUSTMENT | OPENING
   

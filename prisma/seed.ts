@@ -18,7 +18,7 @@ async function main() {
     { code: 'EXP-MAINT', name: 'Maintenance and repairs', type: 'EXPENSE', normalSide: 'DEBIT' },
     { code: 'EXP-CHRG', name: 'Bank and payment charges', type: 'EXPENSE', normalSide: 'DEBIT' },
     { code: 'EXP-MISC', name: 'Miscellaneous expenses', type: 'EXPENSE', normalSide: 'DEBIT' },
-    { code: 'EQ-OWNER', name: 'Owner\\'s capital / drawings', type: 'OWNER_EQUITY', normalSide: 'CREDIT' },
+    { code: 'EQ-OWNER', name: "Owner's capital / drawings", type: 'OWNER_EQUITY', normalSide: 'CREDIT' },
     // Examples of additional custom-named accounts that can be added
     // { code: 'EXP-INTERNET', name: 'Internet & Comm', type: 'EXPENSE', normalSide: 'DEBIT' },
   ]
