@@ -27,8 +27,11 @@ export default async function AppLayout({
           <Link href="/entry" className="block px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 font-medium">
             + New Entry
           </Link>
+          <Link href="/ledger" className="block px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+            General Ledger
+          </Link>
           <Link href="/accounts" className="block px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
-            Ledgers
+            Chart of Accounts
           </Link>
           <Link href="/audit" className="block px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
             Audit Log
