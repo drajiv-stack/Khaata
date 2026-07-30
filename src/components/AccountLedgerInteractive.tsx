@@ -21,11 +21,13 @@ type LedgerEntry = {
 export default function AccountLedgerInteractive({ 
   account, 
   initialEntries, 
-  currentBalance 
+  currentBalance,
+  from = "accounts"
 }: { 
   account: any
   initialEntries: LedgerEntry[]
   currentBalance: number
+  from?: string
 }) {
   const router = useRouter()
   const [filter, setFilter] = useState<'ALL' | 'MONTH' | 'YTD'>('ALL')
@@ -58,6 +60,19 @@ export default function AccountLedgerInteractive({
     
     setLoadingRev(transactionId)
     const res = await reverseTransaction(transactionId, "Manual reversal from ledger")
+    if (res.success) {
+      router.refresh()
+    } else {
+      alert(res.error)
+    }
+    setLoadingRev(null)
+  }
+
+  const handleDelete = async (transactionId: string) => {
+    if (!confirm("Are you sure you want to PERMANENTLY DELETE this entry? This action cannot be undone.")) return
+    setLoadingRev(transactionId)
+    const { deleteTransaction } = await import("@/app/actions/transaction")
+    const res = await deleteTransaction(transactionId)
     if (res.success) {
       router.refresh()
     } else {
@@ -164,13 +179,22 @@ export default function AccountLedgerInteractive({
                       )}
                     </div>
                     {entry.status === 'POSTED' ? (
-                      <button 
-                        onClick={() => handleReverse(entry.transactionId)}
-                        disabled={loadingRev === entry.transactionId}
-                        className="text-red-500 bg-red-500/10 px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50 active:opacity-70 transition-opacity"
-                      >
-                        {loadingRev === entry.transactionId ? '...' : 'Reverse'}
-                      </button>
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => handleReverse(entry.transactionId)}
+                          disabled={loadingRev === entry.transactionId}
+                          className="text-amber-600 bg-amber-500/10 px-3 py-2 rounded-xl text-xs font-bold disabled:opacity-50 active:opacity-70 transition-opacity"
+                        >
+                          {loadingRev === entry.transactionId ? '...' : 'Reverse'}
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(entry.transactionId)}
+                          disabled={loadingRev === entry.transactionId}
+                          className="text-red-500 bg-red-500/10 px-3 py-2 rounded-xl text-xs font-bold disabled:opacity-50 active:opacity-70 transition-opacity"
+                        >
+                          {loadingRev === entry.transactionId ? '...' : 'Hard Delete'}
+                        </button>
+                      </div>
                     ) : (
                       <span className="text-[10px] font-bold text-red-500 bg-red-500/10 px-2 py-1 rounded-md tracking-widest">REVERSED</span>
                     )}
@@ -221,13 +245,22 @@ export default function AccountLedgerInteractive({
                       </td>
                       <td className="px-6 py-4 text-right text-sm">
                         {entry.status === 'POSTED' && (
-                          <button 
-                            onClick={() => handleReverse(entry.transactionId)}
-                            disabled={loadingRev === entry.transactionId}
-                            className="text-red-500 hover:text-red-600 font-bold disabled:opacity-50 transition-colors"
-                          >
-                            {loadingRev === entry.transactionId ? '...' : 'Reverse'}
-                          </button>
+                          <div className="flex flex-col items-end space-y-2">
+                            <button 
+                              onClick={() => handleReverse(entry.transactionId)}
+                              disabled={loadingRev === entry.transactionId}
+                              className="text-amber-600 hover:text-amber-700 font-bold disabled:opacity-50 transition-colors"
+                            >
+                              {loadingRev === entry.transactionId ? '...' : 'Reverse'}
+                            </button>
+                            <button 
+                              onClick={() => handleDelete(entry.transactionId)}
+                              disabled={loadingRev === entry.transactionId}
+                              className="text-red-500 hover:text-red-600 font-bold disabled:opacity-50 transition-colors"
+                            >
+                              {loadingRev === entry.transactionId ? '...' : 'Hard Delete'}
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>

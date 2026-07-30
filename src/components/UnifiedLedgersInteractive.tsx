@@ -249,18 +249,18 @@ export default function UnifiedLedgersInteractive({ initialEntries, accounts }: 
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-[var(--card-bg)] rounded-3xl p-4 border border-black/5 dark:border-white/5 shadow-sm">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Transactions</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{summaryStats.txnCount}</p>
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="bg-[var(--card-bg)] rounded-3xl p-3 sm:p-4 border border-black/5 dark:border-white/5 shadow-sm min-w-0">
+          <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 truncate">Txns</p>
+          <p className="text-base sm:text-2xl font-bold text-gray-900 dark:text-white truncate">{summaryStats.txnCount}</p>
         </div>
-        <div className="bg-[var(--card-bg)] rounded-3xl p-4 border border-black/5 dark:border-white/5 shadow-sm">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Debits</p>
-          <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(summaryStats.totalDebits)}</p>
+        <div className="bg-[var(--card-bg)] rounded-3xl p-3 sm:p-4 border border-black/5 dark:border-white/5 shadow-sm min-w-0">
+          <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 truncate">Debits</p>
+          <p className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white truncate" title={formatCurrency(summaryStats.totalDebits)}>{formatCurrency(summaryStats.totalDebits)}</p>
         </div>
-        <div className="bg-[var(--card-bg)] rounded-3xl p-4 border border-black/5 dark:border-white/5 shadow-sm">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Credits</p>
-          <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(summaryStats.totalCredits)}</p>
+        <div className="bg-[var(--card-bg)] rounded-3xl p-3 sm:p-4 border border-black/5 dark:border-white/5 shadow-sm min-w-0">
+          <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 truncate">Credits</p>
+          <p className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white truncate" title={formatCurrency(summaryStats.totalCredits)}>{formatCurrency(summaryStats.totalCredits)}</p>
         </div>
       </div>
 
@@ -317,9 +317,9 @@ export default function UnifiedLedgersInteractive({ initialEntries, accounts }: 
                             const isDebit = line.amount >= 0
                             return (
                               <div key={line.id} className="flex justify-between items-center text-sm gap-2">
-                                <span className={`flex-1 min-w-0 truncate ${isDebit ? "font-bold text-gray-900 dark:text-white" : "font-medium text-gray-500 pl-3"}`}>
+                                <Link href={`/accounts/${line.accountId}?from=ledger`} className={`flex-1 min-w-0 truncate hover:underline ${isDebit ? "font-bold text-gray-900 dark:text-white" : "font-medium text-gray-500 pl-3"}`}>
                                   {line.accountName}
-                                </span>
+                                </Link>
                                 <span className={`shrink font-mono break-all ${isDebit ? "font-bold text-gray-900 dark:text-white" : "font-medium text-gray-500"}`}>
                                   {isDebit ? formatCurrency(line.amount) : `(${formatCurrency(Math.abs(line.amount))})`}
                                 </span>
@@ -383,7 +383,7 @@ export default function UnifiedLedgersInteractive({ initialEntries, accounts }: 
                               const isDebit = line.amount >= 0
                               return (
                                 <div key={line.id} className="flex justify-between w-72">
-                                  <Link href={`/accounts/${line.accountId}`} className={`hover:underline ${isDebit ? "font-bold text-gray-900 dark:text-white" : "font-medium text-gray-500 pl-4"}`}>
+                                  <Link href={`/accounts/${line.accountId}?from=ledger`} className={`hover:underline ${isDebit ? "font-bold text-gray-900 dark:text-white" : "font-medium text-gray-500 pl-4"}`}>
                                     {line.accountName}
                                   </Link>
                                   <span className={`font-mono ${isDebit ? "font-bold text-gray-900 dark:text-white" : "font-medium text-gray-500"}`}>
@@ -441,7 +441,7 @@ export default function UnifiedLedgersInteractive({ initialEntries, accounts }: 
                 {accs.map(acc => (
                   <Link
                     key={acc.account.id}
-                    href={`/accounts/${acc.account.id}`}
+                    href={`/accounts/${acc.account.id}?from=ledger`}
                     className="flex items-center justify-between px-5 py-4 hover:bg-black/5 dark:hover:bg-white/5 active:bg-black/10 transition-colors gap-2"
                   >
                     <div className="min-w-0 flex-1">

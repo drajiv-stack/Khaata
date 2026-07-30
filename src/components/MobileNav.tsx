@@ -8,9 +8,10 @@ export function MobileNav() {
   
   const navItems = [
     { name: "Dash", href: "/dashboard" },
-    { name: "Entry", href: "/entry", isHighlight: true },
     { name: "Ledger", href: "/ledger" },
+    { name: "+", href: "/entry", isHighlight: true },
     { name: "COA", href: "/accounts" },
+    { name: "Audit", href: "/audit" },
   ]
 
   return (
@@ -27,12 +28,11 @@ export function MobileNav() {
                 isActive ? "text-blue-600" : "text-[#007AFF]"
               }`}
             >
-              <div className={`p-2.5 rounded-full mb-1 transition-colors ${
+              <div className={`p-3 rounded-full mb-1 transition-colors ${
                 isActive ? "bg-blue-600 text-white shadow-md" : "bg-[#007AFF]/10"
               }`}>
-                <span className="text-base font-bold leading-none">+</span>
+                <span className="text-xl font-bold leading-none">{item.name}</span>
               </div>
-              <span className="text-[11px] font-bold tracking-wide">{item.name}</span>
             </Link>
           )
         }
@@ -45,7 +45,7 @@ export function MobileNav() {
               isActive ? "text-[#007AFF]" : "text-gray-500 hover:text-[#007AFF]"
             }`}
           >
-            <span className={`text-[11px] mt-1 tracking-wide ${isActive ? "font-bold" : "font-semibold"}`}>
+            <span className={`text-[13px] mt-1 tracking-wide ${isActive ? "font-bold" : "font-medium"}`}>
               {item.name}
             </span>
           </Link>

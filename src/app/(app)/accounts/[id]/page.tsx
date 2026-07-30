@@ -6,8 +6,10 @@ import AccountLedgerInteractive from "@/components/AccountLedgerInteractive"
 const prisma = new PrismaClient()
 export const dynamic = "force-dynamic"
 
-export default async function AccountLedgerPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export default async function AccountLedgerPage(props: { params: Promise<{ id: string }>, searchParams: Promise<{ from?: string }> }) {
+  const { id } = await props.params
+  const searchParams = await props.searchParams
+  const from = searchParams.from || 'accounts'
   
   const rawAccount = await prisma.account.findUnique({
     where: { id }
@@ -74,15 +76,16 @@ export default async function AccountLedgerPage({ params }: { params: Promise<{ 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex items-center space-x-4 mb-2">
-        <Link href="/accounts" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-          ← Back to Accounts
+        <Link href={`/${from}`} className="text-sm font-bold text-[#007AFF] hover:opacity-80 transition-opacity bg-[#007AFF]/10 px-4 py-2 rounded-xl inline-flex items-center">
+          ← Back to {from === 'accounts' ? 'COA' : 'Ledgers'}
         </Link>
       </div>
 
       <AccountLedgerInteractive 
         account={account} 
         initialEntries={ledgerEntries} 
-        currentBalance={currentBalance} 
+        currentBalance={currentBalance}
+        from={from}
       />
     </div>
   )

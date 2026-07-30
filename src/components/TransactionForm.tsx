@@ -163,7 +163,7 @@ export default function TransactionForm({ accounts: initialAccounts }: { account
   }
 
   return (
-    <div className="space-y-5 relative max-w-5xl mx-auto">
+    <div className="space-y-3 relative max-w-5xl mx-auto">
       {/* Account Creation Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md px-4">
@@ -223,20 +223,34 @@ export default function TransactionForm({ accounts: initialAccounts }: { account
         </div>
       )}
 
-      {/* Date Only Header */}
-      <div className="bg-[var(--card-bg)] rounded-3xl shadow-sm border border-black/5 dark:border-white/5 p-5">
-        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Transaction Date</label>
-        <input type="date" required value={date} onChange={e => setDate(e.target.value)}
-               className="block w-full md:w-64 rounded-xl border border-black/10 dark:border-white/10 px-4 py-3 text-base font-bold dark:bg-[#1C1C1E] dark:text-white bg-white focus:ring-2 focus:ring-[#007AFF] focus:border-transparent outline-none" />
+      {/* Transaction Header: Date and Notes */}
+      <div className="bg-[var(--card-bg)] rounded-3xl shadow-sm border border-black/5 dark:border-white/5 p-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="md:w-48 shrink-0">
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Date</label>
+            <input type="date" required value={date} onChange={e => setDate(e.target.value)}
+                   className="block w-full rounded-xl border border-black/10 dark:border-white/10 px-4 py-2.5 text-base font-bold dark:bg-[#1C1C1E] dark:text-white bg-white focus:ring-2 focus:ring-[#007AFF] focus:border-transparent outline-none" />
+          </div>
+          <div className="flex-1">
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Title / Notes (Optional)</label>
+            <input
+              type="text"
+              value={narration}
+              onChange={e => setNarration(e.target.value)}
+              placeholder="e.g. Cash sale to customer"
+              className="block w-full rounded-xl border border-black/10 dark:border-white/10 px-4 py-2.5 text-base dark:bg-[#1C1C1E] dark:text-white bg-white focus:ring-2 focus:ring-[#007AFF] focus:border-transparent outline-none"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Add Entries */}
-      <div className="bg-[var(--card-bg)] rounded-3xl shadow-sm border border-black/5 dark:border-white/5 p-5">
-        <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white tracking-tight">Add Entries</h2>
-        <form onSubmit={handleAddLine} className="space-y-4">
+      <div className="bg-[var(--card-bg)] rounded-3xl shadow-sm border border-black/5 dark:border-white/5 p-4">
+        <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white tracking-tight">Add Entries</h2>
+        <form onSubmit={handleAddLine} className="space-y-3">
           {/* Account Select */}
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Account</label>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Account</label>
             <select 
               required 
               value={currentAccount} 
@@ -254,15 +268,15 @@ export default function TransactionForm({ accounts: initialAccounts }: { account
           </div>
 
           {/* Debit/Credit Toggle + Amount */}
-          <div className="flex gap-3 items-end">
+          <div className="space-y-3">
             {/* Toggle */}
-            <div className="shrink-0">
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Type</label>
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Type</label>
               <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-xl">
                 <button
                   type="button"
                   onClick={() => setCurrentType("DEBIT")}
-                  className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                  className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${
                     currentType === "DEBIT"
                       ? "bg-emerald-500 text-white shadow-sm"
                       : "text-gray-500 dark:text-gray-400"
@@ -273,7 +287,7 @@ export default function TransactionForm({ accounts: initialAccounts }: { account
                 <button
                   type="button"
                   onClick={() => setCurrentType("CREDIT")}
-                  className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                  className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${
                     currentType === "CREDIT"
                       ? "bg-[#007AFF] dark:bg-[#0A84FF] text-white shadow-sm"
                       : "text-gray-500 dark:text-gray-400"
@@ -285,11 +299,11 @@ export default function TransactionForm({ accounts: initialAccounts }: { account
             </div>
 
             {/* Amount */}
-            <div className="flex-1">
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Amount (₹)</label>
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Amount (₹)</label>
               <input type="number" step="0.01" min="0.01" required placeholder="0.00"
                      value={currentAmount} onChange={e => setCurrentAmount(e.target.value)}
-                     className="block w-full text-right rounded-xl border border-black/10 dark:border-white/10 px-4 py-3 text-base font-bold dark:bg-[#1C1C1E] dark:text-white bg-white focus:ring-2 focus:ring-[#007AFF] focus:border-transparent outline-none font-mono" />
+                     className="block w-full text-right rounded-xl border border-black/10 dark:border-white/10 px-4 py-2.5 text-base font-bold dark:bg-[#1C1C1E] dark:text-white bg-white focus:ring-2 focus:ring-[#007AFF] focus:border-transparent outline-none font-mono" />
             </div>
           </div>
 
@@ -407,15 +421,6 @@ export default function TransactionForm({ accounts: initialAccounts }: { account
               <span className="text-emerald-500 font-bold">✓ Balanced and ready to post</span>
             )}
           </div>
-
-          {/* Narration */}
-          <input
-            type="text"
-            value={narration}
-            onChange={e => setNarration(e.target.value)}
-            placeholder="Narration (optional) — e.g. Cash sale to customer"
-            className="block w-full rounded-xl border border-black/10 dark:border-white/10 px-4 py-3 text-base dark:bg-[#1C1C1E] dark:text-white bg-white focus:ring-2 focus:ring-[#007AFF] focus:border-transparent outline-none"
-          />
 
           {/* Error */}
           {error && (
