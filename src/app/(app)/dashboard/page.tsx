@@ -8,22 +8,30 @@ export const dynamic = "force-dynamic"
 export default async function DashboardPage() {
   const session = await auth()
   
-  // Calculate balances by summing transaction lines for each account
-  // Note: We use raw SQL for performance on aggregate queries
-  const balancesRaw = await prisma.$queryRaw`
-    SELECT a.id, a.code, a.name, a.type, a.normal_side as "normalSide",
-           COALESCE(SUM(tl.amount), 0) as balance
-    FROM accounts a
-    LEFT JOIN transaction_lines tl ON a.id = tl.account_id
-    LEFT JOIN transactions t ON tl.transaction_id = t.id AND t.status = 'POSTED'
-    GROUP BY a.id, a.code, a.name, a.type, a.normal_side
-  `
-  
-  const accounts = balancesRaw as any[]
+  let accounts: any[] = []
+  let dbError: string | null = null
+
+  try {
+    // Calculate balances by summing transaction lines for each account
+    // Note: We use raw SQL for performance on aggregate queries
+    const balancesRaw = await prisma.$queryRaw`
+      SELECT a.id, a.code, a.name, a.type, a.normal_side as "normalSide",
+             COALESCE(SUM(tl.amount), 0) as balance
+      FROM accounts a
+      LEFT JOIN transaction_lines tl ON a.id = tl.account_id
+      LEFT JOIN transactions t ON tl.transaction_id = t.id AND t.status = 'POSTED'
+      GROUP BY a.id, a.code, a.name, a.type, a.normal_side
+    `
+    accounts = balancesRaw as any[]
+  } catch (err: any) {
+    dbError = err.message || "Unknown database error"
+    console.error("Dashboard DB Error:", err)
+  }
 
   // Format balances based on normal side
   const formatBalance = (amount: any, normalSide: string) => {
-    const val = Number(amount)
+    // Safely convert Prisma Decimal/BigInt to number
+    const val = Number(amount?.toString() || 0)
     // If DEBIT normal side, positive means DEBIT balance.
     // In our system, positive is debit, negative is credit.
     // So if normalSide is CREDIT, we flip the sign for display.
@@ -41,6 +49,12 @@ export default async function DashboardPage() {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
         <p className="mt-2 text-base text-gray-500 dark:text-gray-400 font-medium">Welcome back, {session?.user?.name}</p>
       </div>
+
+      {dbError && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-xl text-red-600 dark:text-red-400 text-sm font-medium">
+          Error loading dashboard data: {dbError}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {accounts.filter(a => a.code?.startsWith('CASH') || a.code?.startsWith('BANK') || a.code?.startsWith('DIG')).map(account => (
