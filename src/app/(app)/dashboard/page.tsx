@@ -43,7 +43,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {accounts.filter(a => a.code.startsWith('CASH') || a.code.startsWith('BANK') || a.code.startsWith('DIG')).map(account => (
+        {accounts.filter(a => a.code?.startsWith('CASH') || a.code?.startsWith('BANK') || a.code?.startsWith('DIG')).map(account => (
           <div key={account.id} className="bg-[var(--card-bg)] p-6 rounded-3xl shadow-sm border border-black/5 dark:border-white/5 transition-transform hover:scale-[1.02]">
             <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{account.name}</h3>
             <p className={`mt-2 text-3xl font-bold tracking-tight ${Number(account.balance) < 0 && account.normalSide === 'DEBIT' ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
