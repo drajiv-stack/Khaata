@@ -25,11 +25,11 @@ export default async function AccountLedgerPage({ params }: { params: Promise<{ 
     },
     include: { 
       transaction: {
-        select: { date: true, reference: true, narration: true, status: true, id: true }
+        select: { txnDate: true, reference: true, narration: true, status: true, id: true }
       } 
     },
     orderBy: [
-      { transaction: { date: 'asc' } },
+      { transaction: { txnDate: 'asc' } },
       { transactionId: 'asc' } // stable sort
     ]
   })
@@ -50,7 +50,7 @@ export default async function AccountLedgerPage({ params }: { params: Promise<{ 
     return {
       id: line.id,
       transactionId: line.transaction.id,
-      date: line.transaction.date,
+      date: line.transaction.txnDate,
       reference: line.transaction.reference,
       narration: line.transaction.narration,
       status: line.transaction.status,
