@@ -1,0 +1,331 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String    @id @default(uuid()) @db.Uuid
+  email              String    @unique
+  fullName           String    @map("full_name")
+  passwordHash       String    @map("password_hash")
+  role               String    // OWNER | OPERATOR
+  isActive           Boolean   @default(true) @map("is_active")
+  totpSecret         String?   @map("totp_secret")
+  failedLoginCount   Int       @default(0) @map("failed_login_count")
+  lockedUntil        DateTime? @map("locked_until") @db.Timestamptz
+  lastLoginAt        DateTime? @map("last_login_at") @db.Timestamptz
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  createdTransactions Transaction[]    @relation("TransactionCreator")
+  postedTransactions  Transaction[]    @relation("TransactionPoster")
+  uploadedDocuments   Document[]       @relation("DocumentUploader")
+  reviewedDocuments   Document[]       @relation("DocumentReviewer")
+  reconciliations     Reconciliation[]
+  auditLogs           AuditLog[]
+
+  @@map("users")
+}
+
+model Account {
+  id                     String   @id @default(uuid()) @db.Uuid
+  code                   String?  @unique
+  name                   String
+  type                   String   // CASH | BANK | DIGITAL_SETTLEMENT | SUPPLIER | CUSTOMER | INCOME | EXPENSE | OWNER_EQUITY
+  normalSide             String   @map("normal_side") // DEBIT | CREDIT
+  openingBalance         Decimal  @default(0) @db.Decimal(14, 2) @map("opening_balance")
+  openingDate            DateTime @db.Date @map("opening_date")
+  isActive               Boolean  @default(true) @map("is_active")
+  reconcileRequired      Boolean  @default(false) @map("reconcile_required")
+  varianceAmberThreshold Decimal? @db.Decimal(14, 2) @map("variance_amber_threshold")
+  varianceRedThreshold   Decimal? @db.Decimal(14, 2) @map("variance_red_threshold")
+  notes                  String?
+
+  createdAt              DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  customerProfile        CustomerProfile?
+  supplierProfile        SupplierProfile?
+  transactionLines       TransactionLine[]
+  reconciliations        Reconciliation[]
+
+  @@index([type, isActive])
+  @@map("accounts")
+}
+
+model CustomerProfile {
+  accountId     String  @id @db.Uuid @map("account_id")
+  contactPerson String? @map("contact_person")
+  phone         String?
+  vehicleRefs   String? @map("vehicle_refs")
+  creditLimit   Decimal? @db.Decimal(14, 2) @map("credit_limit")
+  creditDays    Int?    @map("credit_days")
+  address       String?
+
+  account       Account @relation(fields: [accountId], references: [id])
+
+  @@map("customer_profiles")
+}
+
+model SupplierProfile {
+  accountId     String  @id @db.Uuid @map("account_id")
+  companyName   String  @map("company_name")
+  dealerCode    String? @map("dealer_code")
+  contactPerson String? @map("contact_person")
+  phone         String?
+
+  account       Account @relation(fields: [accountId], references: [id])
+
+  @@map("supplier_profiles")
+}
+
+model Transaction {
+  id                       String   @id @default(uuid()) @db.Uuid
+  txnNumber                BigInt   @default(autoincrement()) @map("txn_number")
+  txnDate                  DateTime @db.Date @map("txn_date")
+  template                 String
+  narration                String?
+  reference                String?
+  status                   String   // DRAFT | POSTED | REVERSED
+  reversesTransactionId    String?  @db.Uuid @map("reverses_transaction_id")
+  reversedByTransactionId  String?  @unique @db.Uuid @map("reversed_by_transaction_id")
+  source                   String   // MANUAL | DOCUMENT_REVIEW | AUTO_APPROVED | ADJUSTMENT | OPENING
+  
+  createdById              String?  @db.Uuid @map("created_by")
+  postedById               String?  @db.Uuid @map("posted_by")
+  
+  createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz
+  postedAt                 DateTime? @map("posted_at") @db.Timestamptz
+  
+  // Relations
+  reversesTransaction      Transaction?  @relation("Reverses", fields: [reversesTransactionId], references: [id])
+  reversedByTransaction    Transaction?  @relation("Reverses")
+  
+  createdBy                User?     @relation("TransactionCreator", fields: [createdById], references: [id])
+  postedBy                 User?     @relation("TransactionPoster", fields: [postedById], references: [id])
+  
+  lines                    TransactionLine[]
+  documentLinks            DocumentLink[]
+  reconciliationAdjustment Reconciliation[]  @relation("ReconciliationAdjustment")
+
+  @@index([txnDate])
+  @@index([status])
+  @@index([createdById])
+  @@index([template])
+  @@map("transactions")
+}
+
+model TransactionLine {
+  id               String   @id @default(uuid()) @db.Uuid
+  transactionId    String   @db.Uuid @map("transaction_id")
+  accountId        String   @db.Uuid @map("account_id")
+  amount           Decimal  @db.Decimal(14, 2)
+  lineNarration    String?  @map("line_narration")
+  isReconciled     Boolean  @default(false) @map("is_reconciled")
+  reconciliationId String?  @db.Uuid @map("reconciliation_id")
+
+  transaction      Transaction     @relation(fields: [transactionId], references: [id], onDelete: Restrict)
+  account          Account         @relation(fields: [accountId], references: [id])
+  reconciliation   Reconciliation? @relation(fields: [reconciliationId], references: [id])
+
+  @@index([accountId, transactionId])
+  @@index([reconciliationId])
+  @@map("transaction_lines")
+}
+
+model Document {
+  id                      String   @id @default(uuid()) @db.Uuid
+  originalFilename        String   @map("original_filename")
+  storageKey              String   @unique @map("storage_key")
+  mimeType                String   @map("mime_type")
+  sizeBytes               BigInt   @map("size_bytes")
+  sha256                  String
+  docType                 String?  @map("doc_type") // PURCHASE_INVOICE | BANK_STATEMENT | DEPOSIT_SLIP | CUSTOMER_RECEIPT | SETTLEMENT_STATEMENT | EXPENSE_BILL | CASH_MEMO | OTHER
+  status                  String   // UPLOADED | EXTRACTING | PENDING_REVIEW | APPROVED | REJECTED | FAILED
+  extractedJson           Json?    @map("extracted_json")
+  extractionConfidence    Decimal? @db.Decimal(4, 3) @map("extraction_confidence")
+  extractionModel         String?  @map("extraction_model")
+  extractionError         String?  @map("extraction_error")
+  rejectionReason         String?  @map("rejection_reason")
+  
+  uploadedById            String?  @db.Uuid @map("uploaded_by")
+  uploadedAt              DateTime @default(now()) @map("uploaded_at") @db.Timestamptz
+  reviewedById            String?  @db.Uuid @map("reviewed_by")
+  reviewedAt              DateTime? @map("reviewed_at") @db.Timestamptz
+  
+  supersededByDocumentId  String?  @unique @db.Uuid @map("superseded_by_document_id")
+
+  // Relations
+  uploadedBy              User?      @relation("DocumentUploader", fields: [uploadedById], references: [id])
+  reviewedBy              User?      @relation("DocumentReviewer", fields: [reviewedById], references: [id])
+  
+  supersededByDocument    Document?  @relation("Superseded", fields: [supersededByDocumentId], references: [id])
+  supersedesDocument      Document?  @relation("Superseded")
+
+  transactionLinks        DocumentLink[]
+
+  @@index([status])
+  @@index([uploadedAt])
+  @@index([docType])
+  @@index([sha256])
+  @@map("documents")
+}
+
+model DocumentLink {
+  documentId      String   @db.Uuid @map("document_id")
+  transactionId   String   @db.Uuid @map("transaction_id")
+
+  document        Document    @relation(fields: [documentId], references: [id])
+  transaction     Transaction @relation(fields: [transactionId], references: [id])
+
+  @@id([documentId, transactionId])
+  @@map("document_links")
+}
+
+model Reconciliation {
+  id                       String   @id @default(uuid()) @db.Uuid
+  accountId                String   @db.Uuid @map("account_id")
+  periodStart              DateTime @db.Date @map("period_start")
+  statementDate            DateTime @db.Date @map("statement_date")
+  bookBalance              Decimal  @db.Decimal(14, 2) @map("book_balance")
+  actualBalance            Decimal  @db.Decimal(14, 2) @map("actual_balance")
+  status                   String   // IN_PROGRESS | COMPLETED | COMPLETED_WITH_VARIANCE
+  explanation              String?
+  adjustmentTransactionId  String?  @db.Uuid @map("adjustment_transaction_id")
+  denominationJson         Json?    @map("denomination_json")
+  
+  performedById            String   @db.Uuid @map("performed_by")
+  
+  completedAt              DateTime? @map("completed_at") @db.Timestamptz
+  createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  account                  Account       @relation(fields: [accountId], references: [id])
+  performedBy              User          @relation(fields: [performedById], references: [id])
+  adjustmentTransaction    Transaction?  @relation("ReconciliationAdjustment", fields: [adjustmentTransactionId], references: [id])
+  
+  transactionLines         TransactionLine[]
+
+  @@unique([accountId, statementDate])
+  @@map("reconciliations")
+}
+
+model AuditLog {
+  id            BigInt   @id @default(autoincrement())
+  occurredAt    DateTime @default(now()) @map("occurred_at") @db.Timestamptz
+  userId        String?  @db.Uuid @map("user_id")
+  action        String   // CREATE | POST | REVERSE | UPDATE | APPROVE | REJECT | LOGIN | LOGIN_FAILED | LOGOUT | RECONCILE | EXPORT
+  entityType    String   @map("entity_type")
+  entityId      String?  @map("entity_id")
+  beforeJson    Json?    @map("before_json")
+  afterJson     Json?    @map("after_json")
+  ipAddress     String?  @map("ip_address") @db.Inet
+  userAgent     String?  @map("user_agent")
+
+  user          User?    @relation(fields: [userId], references: [id])
+
+  @@index([occurredAt(sort: Desc)])
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@map("audit_log")
+}
+
+// ==========================================
+// Phase 3: Meter Readings and Stock
+// ==========================================
+
+model Product {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   // MS | HSD | XP-95 | lubricant
+  unit      String   // LITRE | PIECE
+  isActive  Boolean  @default(true) @map("is_active")
+
+  dailyRates    DailyRate[]
+  nozzles       Nozzle[]
+  tankDips      TankDip[]
+  stockMovements StockMovement[]
+
+  @@map("products")
+}
+
+model DailyRate {
+  id            String   @id @default(uuid()) @db.Uuid
+  productId     String   @db.Uuid @map("product_id")
+  effectiveDate DateTime @db.Date @map("effective_date")
+  saleRate      Decimal  @db.Decimal(10, 3) @map("sale_rate")
+  purchaseRate  Decimal  @db.Decimal(10, 3) @map("purchase_rate")
+  
+  createdById   String   @db.Uuid @map("created_by")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  product       Product  @relation(fields: [productId], references: [id])
+
+  @@unique([productId, effectiveDate])
+  @@map("daily_rates")
+}
+
+model Nozzle {
+  id          String   @id @default(uuid()) @db.Uuid
+  duName      String   @map("du_name")
+  nozzleLabel String   @map("nozzle_label")
+  productId   String   @db.Uuid @map("product_id")
+  isActive    Boolean  @default(true) @map("is_active")
+
+  product       Product        @relation(fields: [productId], references: [id])
+  meterReadings MeterReading[]
+
+  @@map("nozzles")
+}
+
+model MeterReading {
+  id             String   @id @default(uuid()) @db.Uuid
+  nozzleId       String   @db.Uuid @map("nozzle_id")
+  readingDate    DateTime @db.Date @map("reading_date")
+  shift          String   // DAY | NIGHT | FULL
+  openingReading Decimal  @db.Decimal(12, 2) @map("opening_reading")
+  closingReading Decimal  @db.Decimal(12, 2) @map("closing_reading")
+  testingLitres  Decimal  @db.Decimal(10, 2) @map("testing_litres")
+  
+  rateApplied    Decimal  @db.Decimal(10, 3) @map("rate_applied")
+  recordedById   String   @db.Uuid @map("recorded_by")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  nozzle         Nozzle   @relation(fields: [nozzleId], references: [id])
+
+  @@unique([nozzleId, readingDate, shift])
+  @@map("meter_readings")
+}
+
+model TankDip {
+  id              String   @id @default(uuid()) @db.Uuid
+  tankLabel       String   @map("tank_label")
+  productId       String   @db.Uuid @map("product_id")
+  dipDate         DateTime @db.Date @map("dip_date")
+  measuredLitres  Decimal  @db.Decimal(12, 2) @map("measured_litres")
+  bookLitres      Decimal  @db.Decimal(12, 2) @map("book_litres")
+  recordedById    String   @db.Uuid @map("recorded_by")
+
+  product         Product  @relation(fields: [productId], references: [id])
+
+  @@map("tank_dips")
+}
+
+model StockMovement {
+  id             String   @id @default(uuid()) @db.Uuid
+  productId      String   @db.Uuid @map("product_id")
+  movementDate   DateTime @db.Date @map("movement_date")
+  direction      String   // IN | OUT
+  litres         Decimal  @db.Decimal(12, 2)
+  rate           Decimal  @db.Decimal(10, 3)
+  transactionId  String?  @db.Uuid @map("transaction_id") // Optional link to purchase/sale
+  source         String
+
+  product        Product  @relation(fields: [productId], references: [id])
+
+  @@map("stock_movements")
+}
