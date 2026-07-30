@@ -23,6 +23,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
     })
   ],
+  secret: "my-super-secret-dummy-key-for-now",
   callbacks: {
     jwt({ token, user }) {
       if (user) {
