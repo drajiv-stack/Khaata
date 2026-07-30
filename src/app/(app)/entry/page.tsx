@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic"
 
 export default async function EntryPage() {
   const accounts = await prisma.account.findMany({
+    where: { isActive: true },
     select: { id: true, code: true, name: true, type: true },
     orderBy: { code: 'asc' }
   })
