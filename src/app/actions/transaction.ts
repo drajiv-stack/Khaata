@@ -52,7 +52,7 @@ export async function createTransaction(data: {
           action: "CREATE",
           entityType: "TRANSACTION",
           entityId: txn.id,
-          details: { reference: txn.reference, narration: txn.narration }
+          afterJson: { reference: txn.reference, narration: txn.narration }
         }
       })
       

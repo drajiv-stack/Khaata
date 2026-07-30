@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic"
 
 export default async function AuditLogPage() {
   const logs = await prisma.auditLog.findMany({
-    orderBy: { createdAt: 'desc' },
+    orderBy: { occurredAt: 'desc' },
     include: {
       user: { select: { email: true, role: true } }
     },
@@ -41,10 +41,10 @@ export default async function AuditLogPage() {
               ) : logs.map((log) => (
                 <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {log.createdAt.toLocaleString()}
+                    {log.occurredAt.toLocaleString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                    {log.user.email} <span className="text-xs text-gray-500 font-normal">({log.user.role})</span>
+                    {log.user?.email} <span className="text-xs text-gray-500 font-normal">({log.user?.role})</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -57,11 +57,11 @@ export default async function AuditLogPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {log.entityType} <span className="text-xs truncate max-w-[100px] inline-block align-bottom" title={log.entityId}>({log.entityId})</span>
+                    {log.entityType} <span className="text-xs truncate max-w-[100px] inline-block align-bottom" title={log.entityId || ""}>({log.entityId})</span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                     <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-2 rounded border border-gray-100 dark:border-gray-700 overflow-x-auto">
-                      {JSON.stringify(log.details, null, 2)}
+                      {JSON.stringify(log.afterJson, null, 2)}
                     </pre>
                   </td>
                 </tr>
