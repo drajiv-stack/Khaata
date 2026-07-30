@@ -1,10 +1,11 @@
 import { PrismaClient } from "@prisma/client"
-import GeneralLedgerInteractive from "@/components/GeneralLedgerInteractive"
+import UnifiedLedgersInteractive from "@/components/UnifiedLedgersInteractive"
 
 const prisma = new PrismaClient()
 export const dynamic = "force-dynamic"
 
-export default async function GeneralLedgerPage() {
+export default async function LedgerPage() {
+  // Fetch all posted/reversed transactions with lines
   const transactions = await prisma.transaction.findMany({
     where: { status: { in: ['POSTED', 'REVERSED'] } },
     include: { 
@@ -18,9 +19,15 @@ export default async function GeneralLedgerPage() {
     ]
   })
 
+  // Fetch all active accounts for account-wise view
+  const rawAccounts = await prisma.account.findMany({
+    where: { isActive: true },
+    orderBy: [{ type: 'asc' }, { name: 'asc' }]
+  })
+
   const generalEntries = transactions.map(txn => {
-    let debits = 0;
-    let credits = 0;
+    let debits = 0
+    let credits = 0
     
     txn.lines.forEach(line => {
       const amt = Number(line.amount)
@@ -38,6 +45,7 @@ export default async function GeneralLedgerPage() {
       credits,
       lines: txn.lines.map(l => ({
         id: l.id,
+        accountId: l.accountId,
         accountName: l.account.name,
         accountType: l.account.type,
         amount: Number(l.amount)
@@ -45,9 +53,18 @@ export default async function GeneralLedgerPage() {
     }
   })
 
+  const accounts = rawAccounts.map(a => ({
+    id: a.id,
+    code: a.code,
+    name: a.name,
+    type: a.type,
+    normalSide: a.normalSide,
+    openingBalance: Number(a.openingBalance),
+  }))
+
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      <GeneralLedgerInteractive initialEntries={generalEntries} />
+    <div className="max-w-7xl mx-auto">
+      <UnifiedLedgersInteractive initialEntries={generalEntries} accounts={accounts} />
     </div>
   )
 }

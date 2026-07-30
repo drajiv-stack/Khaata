@@ -43,7 +43,7 @@ export default async function AppLayout({
             + New Entry
           </Link>
           <Link href="/ledger" className="block px-3 py-2 rounded-xl text-gray-700 hover:bg-black/5 dark:text-gray-300 dark:hover:bg-white/5 font-medium transition-colors">
-            General Ledger
+            Ledgers
           </Link>
           <Link href="/accounts" className="block px-3 py-2 rounded-xl text-gray-700 hover:bg-black/5 dark:text-gray-300 dark:hover:bg-white/5 font-medium transition-colors">
             Chart of Accounts

@@ -114,7 +114,7 @@ export default function AccountLedgerInteractive({
                   <XAxis dataKey="name" fontSize={12} tickMargin={10} axisLine={false} tickLine={false} stroke="#8E8E93" />
                   <YAxis fontSize={12} domain={['auto', 'auto']} tickFormatter={(val) => `₹${val}`} axisLine={false} tickLine={false} stroke="#8E8E93" />
                   <Tooltip 
-                    formatter={(value: number) => [`₹${value.toFixed(2)}`, 'Balance']}
+                    formatter={(value: unknown) => [`₹${Number(value).toFixed(2)}`, 'Balance']}
                     contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'var(--card-bg)' }}
                   />
                   <Line type="monotone" dataKey="balance" stroke="#007AFF" strokeWidth={3} dot={{ r: 4, fill: '#007AFF', strokeWidth: 2, stroke: 'var(--card-bg)' }} activeDot={{ r: 6 }} />
