@@ -15,10 +15,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize() {
         // Bypass all checks for now to make login simple
         return {
-          id: "guest-id",
-          email: "nishant@example.com",
-          name: "Nishant",
-          role: "ADMIN"
+          id: "c83ec6e3-a095-4ca1-ad51-9d3071813810", // Valid UUID present in DB
+          email: "owner@example.com",
+          name: "Pump Owner",
+          role: "OWNER"
         }
       }
     })
