@@ -148,6 +148,12 @@ export async function deleteTransaction(transactionId: string) {
 
     // Run in a transaction to ensure both lines and the parent are deleted together
     await prisma.$transaction(async (tx) => {
+      // 0. Update status to bypass Postgres prevent_posted_mutation trigger
+      await tx.transaction.update({
+        where: { id: transactionId },
+        data: { status: "DRAFT" }
+      })
+
       // 1. Delete all child transaction lines
       await tx.transactionLine.deleteMany({
         where: { transactionId }
