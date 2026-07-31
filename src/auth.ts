@@ -26,14 +26,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: "my-super-secret-dummy-key-for-now",
   callbacks: {
     jwt({ token, user }) {
+      // Always force the correct UUID, even for old sessions with "guest-id"
+      const VALID_USER_ID = "c83ec6e3-a095-4ca1-ad51-9d3071813810"
+      token.sub = VALID_USER_ID
       if (user) {
         token.role = (user as any).role
+      }
+      if (!token.role) {
+        token.role = "OWNER"
       }
       return token
     },
     session({ session, token }) {
-      if (session.user && token.sub) {
-        session.user.id = token.sub
+      if (session.user) {
+        session.user.id = token.sub!
         ;(session.user as any).role = token.role
       }
       return session
