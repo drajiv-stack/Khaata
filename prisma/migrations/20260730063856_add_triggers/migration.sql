@@ -40,6 +40,10 @@ BEGIN
     END IF;
   END IF;
 
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  END IF;
+
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
